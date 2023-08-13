@@ -14,10 +14,10 @@ x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 A=np.zeros((M+1,M+1))
 y=np.zeros((M+1,1))
-bt=0.05
-af=0.1 
+bt=0.1
+af=0 
 A=np.zeros((M+1,M+1))
-tol=1e-5
+tol=1e-3
 err1=[0]
 '''
 A[0][0],A[0][1]=-2*bt/(hx**2)-3*af/(2*hx),bt/(hx**2)
@@ -122,11 +122,12 @@ def RKC(f,t0,t_end,h,u0,s,s1):
         if tc[-1] + h > t_end:
             h = t_end -tc[-1]
         k[:,0],k1[:,0]=y[:,-1],y[:,-1]
-        ky[:,1]=fun1(t[-1],y[:,-1])
-        k[:,1]=y[:,-1]+(w1/w0) *h *ky[:,1]
-        c[1]=w1/w0
+        ky[:,0]=fun1(t[-1],y[:,-1])
+        k[:,1]=y[:,-1]+(w1/w0) *h *ky[:,0]
+        c[1]=u1[1]
         c1[1]=1/(s1+1)*c[1]
         k1[:,1]=1/(s1+1)*k[:,1]+(1-1/(s1+1))*k1[:,0]
+        ky[:,1]=fun1(tc[-1]+u1[1]*h,k[:,1])
         for j in range(2,s+s1+1):
             u[j]=2*w0*b[j]/b[j-1]
             #print(u[j])
@@ -149,7 +150,7 @@ def RKC(f,t0,t_end,h,u0,s,s1):
         err2=err(y[:,-1],yc,h)/tol
         err1.append(np.linalg.norm(err2)/math.sqrt(M+1))
         fac=0.8*((1/err1[-1])**(1/2))
-        y = np.column_stack((y, yb))
+        y = np.column_stack((y, yc))
         h3=(min(10,max(0.1,fac)))*h
         eig1,abcd=np.linalg.eig(A)
         eig2=np.max(np.abs(eig1))
@@ -159,8 +160,8 @@ def RKC(f,t0,t_end,h,u0,s,s1):
 
 t0=0
 t_end=2
-h=0.01
-tc,y=RKC(fun1,t0,t_end,h,y,50,2)
+h=0.1
+tc,y=RKC(fun1,t0,t_end,h,y,10,2)
 plt.plot(x[1:M], y[1:M,-1],)
 plt.title(' t=2 af=0.1 beta=0.05  numberical solutions of RKC')
 plt.xlabel('x')

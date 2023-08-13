@@ -20,5 +20,5 @@ plt.contour(X, Y, np.abs(result), levels=[1], colors='red')  # 使用绝对值�
 plt.xlabel('Re(z)')
 plt.ylabel('Im(z)')
 plt.title('Contour Plot of Complex Function (|f(z)| = 1)')
-
+print(np.sqrt(97))
 plt.show()

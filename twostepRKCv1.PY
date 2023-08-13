@@ -5,6 +5,7 @@ import math
 import pandas as pd
 from pandas import Series,DataFrame
 import seaborn as sns
+from numpy.polynomial import chebyshev
 np.seterr(divide='ignore', invalid='ignore')
 
 M=600
@@ -48,23 +49,33 @@ def fun1(x,y):
 
 def err(x,y,h):
     return (1/15)*(12*(x-y)-6*h*(np.dot(A,x)+np.dot(A,y)))
-def RKC(f,t0,t_end,h,u0,s,s1):
+def RKC(f,t0,t_end,h,u0,s):
     h_v=[h]
     h_v2=[h]
+    h1=h
     tc=[t0] #t的初始
     y=u0
     s_max=1
+    counter=0
+    cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
+    cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
+    t3=cheb_poly.deriv(1)
+    t4=cheb_poly.deriv(2)
+    t5=cheb_poly.deriv(3)
+    r=1
     while tc[-1]<t_end:
-        h=h_v[-1]
-        w0=1+0.05/((s+s1)**2)
-        c=np.zeros(s+s1+1)
-        c1=np.zeros(s+s1+1)
-        b=np.zeros(s+s1+1)
-        t=np.zeros(s+1+s1)
-        t1=np.zeros(s+1+s1)
-        k=np.zeros((M+1,s+s1+1))
-        k1=np.zeros((M+1,s+1+s1))
-        ky=np.zeros((M+1,s+s1+1))
+        yt=0.6
+        w0=1+0.05/((s)**2)
+        c=np.zeros(s+1)
+        c1=np.zeros(s+1)
+        b=np.zeros(s+1)
+        t=np.zeros(s+1)
+        t1=np.zeros(s+1)
+        k=np.zeros((M+1,s+1))
+        k1=np.zeros((M+1,s+1))
+        ky=np.zeros((M+1,s+1))
+        x=np.zeros(s+1)
+        x[0],x[1]=0,0 
         ky[:,0]=y[:,-1]
    
         c1[0]=0
@@ -75,71 +86,106 @@ def RKC(f,t0,t_end,h,u0,s,s1):
         t[0]=1
         t[1]=w0
         b[1]=1/t[1]
-        u=np.zeros(s+1+s1)
+        u=np.zeros(s+1)
         u[0],u[1]=0,0
-        v=np.zeros(s+1+s1)
+        v=np.zeros(s+1)
         v[0],v[1]=0,0  
-        u1=np.zeros(s+1+s1)
+        u1=np.zeros(s+1)
     
-        for j in range(2,s+s1+1):
+        for j in range(2,s+1):
          t[j]=2*w0*t[j-1]-t[j-2]
          t1[j]=2*t[j-1]+2*w0*t1[j-1]-t1[j-2]
          b[j]=1/t[j]  
     #print(b)  
-        w1=t[s+s1]/t1[s+s1]
+        w1=1/(0.341*(s**2))
         u1[0],u1[1]=0,w1/w0
         k[:,0],k1[:,0]=y[:,-1],y[:,-1]
         ky[:,1]=fun1(t[-1],y[:,-1])
         k[:,1]=y[:,-1]+(w1/w0) *h *ky[:,1]
         c[1]=w1/w0
-        c1[1]=1/(s1+1)*c[1]
-        k1[:,1]=1/(s1+1)*k[:,1]+(1-1/(s1+1))*k1[:,0]
-        for j in range(2,s+s1+1):
+        for j in range(2,s+1):
             u[j]=2*w0*b[j]/b[j-1]
             #print(u[j])
             v[j]=-b[j]/b[j-2]
             #print(v[j])
             u1[j]=2*w1*b[j]/b[j-1]
             c[j]=u[j]*c[j-1]+v[j]*c[j-2]+u1[j]
-            c1[j]=1/(s1+1)*c[j]+(1-1/(s1+1))*c1[j-1]
+            x[j]=u[j]*x[j-1]+v[j]*x[j-2]+u1[j]*c[j-1]
             k[:,j]=u[j]*k[:,j-1]+v[j]*k[:,j-2]+(1-u[j]-v[j])*k[:,0]+u1[j]*h*ky[:,j-1]
             #if j==4:
                 #print(k[4])
-            k1[:,j]=1/(s1+1)*k[:,j]+(1-1/(s1+1))*k1[:,j-1]
             ky[:,j]=fun1(tc[-1]+c[j]*h,k[:,j])
-        x1=(1-c1[s+s1])/(c1[s+s1-1]-c1[s+s1])
-        x2=1-x1
-        yb=x1*k1[:,s+s1-1]+x2*k1[:,s+s1]
-        yc=k[:,s+s1]
-        err2=err(y[:,-1],yb,h)/tol
-        err1=np.linalg.norm(err2)/math.sqrt(M+1)
-        fac=0.8*((1/err1)**(1/2))
-        if err1<1:
-            y = np.column_stack((y, yb))
-            h=min(10,max(0.1,fac))*h
-            if tc[-1] + h > t_end:
-                 h = t_end -tc[-1]
-            h_v.append(h)
-            h_v2.append(h)
-            s=math.sqrt(h*eig2/1.8)
+        bb=cheb_poly(w0)
+        bs=bb/(t3(w0)*w1)
+        bn=(1+r)/(bs*(yt*c[s]+2*x[s]*r*(yt**2)))
+        bf1=(c[s]*r*(1+r))/(c[s]+2*x[s]*r*yt)-r
+        b0=1-bf1-bn
+        yb=k[:,s]
+        err11=0
+        err1=0
+        if counter>=1:
+         yc=bf1*y[:,-2]+b0*y[:,-1]+bn*k[:,s]
+         err22=err(y[:,-1],yc,h1)/tol
+         err11=np.linalg.norm(err22)/math.sqrt(M+1)
+         fac2=0.8*((1/err11)**(1/2))
+        if counter==0:
+         err2=err(y[:,-1],yb,h1)/tol
+         err1=np.linalg.norm(err2)/math.sqrt(M+1)
+         fac=0.8*((1/err1)**(1/2))
+        if counter==0 and err1<1:
+            y=y = np.column_stack((y, yb))
+            h_v.append(h1)
+            h_v2.append(h1)
+            tc.append(tc[-1]+h1)
+            h1=min(h1,fac*h1)
+            r=h1/h
+            s=math.sqrt(h*eig2/0.65)
             s=math.ceil(s)
-            tc.append(tc[-1]+h)
+            counter+=1
+            h=yt*h1
+            if s<=2:
+                s=3
+            if s>200:
+                s=200
+            if s>s_max:
+                s_max=s
+        if counter==0 and err1>1:
+            h=fac*h
+            s=math.sqrt(h*eig2/1.138)
+            s=math.ceil(s)
+            if s<=2:
+                s==3
+            if s>200:
+                s=200
+        if err11<1 and counter>=1:
+            y = np.column_stack((y, yb))
+            h_v.append(h1)
+            h_v2.append(h1)
+            h1=min(10,max(0.1,fac))*h1
+            if tc[-1] + h1 > t_end:
+                 h1 = t_end -tc[-1]
+            s=math.sqrt(h1*eig2/1.137)
+            s=math.ceil(s)
+            tc.append(tc[-1]+h1)
             if s==1:
                 s==2
             if s>200:
                 s=200
             if s>s_max:
                 s_max=s
-            
-        else:
-            h=min(10,max(0.1,fac))*h
-            h_v.append(h)
-            s=math.sqrt(h*eig2/1.8)
+            h=yt*h1
+        if err11>1 and counter >=1:
+            h1=min(10,max(0.1,fac))*h1
+            h_v.append(h1)
+            r=h_v[-1]/h_v[-1]
+            h_v2.append(h1)
+            s=math.sqrt(h*eig2/1.137)
             s=math.ceil(s)
             if s==1:
                 s==2
             if s>200:
                 s=200
+            h=yt*h1
             
             
 
@@ -152,13 +198,13 @@ def RKC(f,t0,t_end,h,u0,s,s1):
 
 t0=0
 t_end=2
-h=0.1
+h=0.001
 eig11,abcd=np.linalg.eig(B)
 eig21=np.max(np.abs(eig1))
 print(eig21)
-s=math.sqrt(h*eig2/0.65)
+s=math.sqrt(h*eig2/1.0)
 s=math.ceil(s)
-tc,y=RKC(fun1,t0,t_end,h,y,s,2)
+tc,y=RKC(fun1,t0,t_end,h,y,s)
 plt.plot(x[1:M], y[1:M,-1],)
 plt.title(' t=2 af=0.1 beta=0.05  numberical solutions of RKC')
 plt.xlabel('x')
@@ -170,9 +216,3 @@ X, Y = np.meshgrid(x, tc)
 ax.plot_surface(X,Y,y.T, rstride=1, cstride=1, cmap='hot')
 plt.title('3D numberical solutions of RKC')
 plt.show()
-
-
-
-
-
-

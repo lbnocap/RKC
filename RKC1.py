@@ -14,8 +14,8 @@ x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 A=np.zeros((M+1,M+1))
 y=np.zeros((M+1,1))
-bt=0.1
-af=0 
+bt=0.05
+af=0.1
 A=np.zeros((M+1,M+1))
 tol=1e-3
 err1=[0]

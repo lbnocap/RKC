@@ -15,7 +15,7 @@ c=np.zeros(s+1)
 b=np.zeros(s+1)
 t=np.zeros(s+1)
 x=np.zeros(s+1)
-w0=1+(0.05/((s)**2))
+w0=1+(2/13/((s)**2))
 x[0],x[1]=0,0 
 c[0]=0
 b[0]=1
@@ -64,8 +64,8 @@ values = 1-bs*bb+bs*cheb_poly(Z)
 result=(b0+bn*(values)-np.sqrt((b0+bn *(values))**2+4*bf1))/2 
 result1=(b0+bn*(values)+np.sqrt((b0+bn *(values))**2+4*bf1))/2
 plt.figure(figsize=(8, 6))
-plt.contour(X, Y, np.abs(result), levels=[1], colors='red') 
-plt.contour(X, Y, np.abs(result1), levels=[1], colors='blue') 
+#plt.contour(X, Y, np.abs(result), levels=[1], colors='red') 
+#plt.contour(X, Y, np.abs(result1), levels=[1], colors='blue') 
 mask1 = np.abs(result1) <= 1
 mask = np.abs(result) <=1
 plt.imshow(mask,extent=[-120,0,-30,30] ,origin='lower', cmap='Blues', alpha=0.5)

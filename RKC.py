@@ -14,7 +14,7 @@ x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 A=np.zeros((M+1,M+1))
 y=np.zeros((M+1,1))
-bt=0.1
+bt=1
 af=0
 tol=1e-3
 A=np.zeros((M+1,M+1))
@@ -116,6 +116,7 @@ def RKC(f,t0,t_end,h,u0,s,s1):
         fac=0.8*((1/err1)**(1/2))
         if err1<1:
             y = np.column_stack((y, yb))
+            tc.append(tc[-1]+h)
             h=min(10,max(0.1,fac))*h
             if tc[-1] + h > t_end:
                  h = t_end -tc[-1]
@@ -123,7 +124,6 @@ def RKC(f,t0,t_end,h,u0,s,s1):
             h_v2.append(h)
             s=math.sqrt(h*eig2/1.8)
             s=math.ceil(s)
-            tc.append(tc[-1]+h)
             if s==1:
                 s==2
             if s>200:

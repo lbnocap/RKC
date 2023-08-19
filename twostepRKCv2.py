@@ -2,9 +2,6 @@ import numpy as np  #改造二阶二步
 import numpy.matlib
 import matplotlib.pyplot as plt
 import math
-import pandas as pd
-from pandas import Series,DataFrame
-import seaborn as sns
 from numpy.polynomial import chebyshev
 import time
 np.seterr(divide='ignore', invalid='ignore') 
@@ -48,14 +45,14 @@ def RKC(f,t0,t_end,h,u0,s):
     y=u0
     s_max=0
     nfr=0
-    cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
-    cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
-    t3=cheb_poly.deriv(1)
-    t4=cheb_poly.deriv(2)
-    t5=cheb_poly.deriv(3)
     counter=0
     while tc[-1]<t_end:
-        nfr+=s
+        nfr+=s 
+        cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
+        cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
+        t3=cheb_poly.deriv(1)
+        t4=cheb_poly.deriv(2)
+        t5=cheb_poly.deriv(3)
         w0=1+(0.05)/((s)**2)
         c=np.zeros(s+1)
         b=np.zeros(s+1)
@@ -121,7 +118,7 @@ def RKC(f,t0,t_end,h,u0,s):
         C=1/6+bf1/6-bn*(bs*t5(w0)*(w1**3)*(yt**3)/(6*bb))
         if counter==0:
             yc=(1-bs)*y[:,-1]+bs*k[:,3]
-            err2=C*err(y[:,-1],yc,h1)/tol
+            err2=C*err(y[:,-1],yc,h1)/1e-2
             err1=np.linalg.norm(err2)/math.sqrt(M+1)
             fac=0.8*((1/err1)**(1/3))
             if err1<1 or h1==0.0005:
@@ -135,7 +132,7 @@ def RKC(f,t0,t_end,h,u0,s):
                 if h1<0.0005:
                     h1=0.0005
                 h=h1
-                s2=math.sqrt(h1*eig2/1.05)
+                s2=math.sqrt(h1*eig2/1.138)
                 s=math.ceil(s2)
                 if s<3:
                     s=3
@@ -158,7 +155,7 @@ def RKC(f,t0,t_end,h,u0,s):
                 if h1<0.0005:
                     h1=0.0005
                 h=yt*h1
-                s2=math.sqrt(h1*eig2/1.05)
+                s2=math.sqrt(h1*eig2/1.138)
                 s=math.ceil(s2)
                 if s<3:
                     s=3
@@ -168,7 +165,7 @@ t_end=2
 h=0.01
 eig1,abcd=np.linalg.eig(A)
 eig2=np.max(np.abs(eig1))
-s2=math.sqrt(h*eig2/1.05)
+s2=math.sqrt(h*eig2/1.138)
 s=math.ceil(s2)
 if s<=3:
     s=3

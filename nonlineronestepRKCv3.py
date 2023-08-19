@@ -1,46 +1,84 @@
-import numpy as np #原二阶二步不变步长
+import numpy as np   #改造
 import numpy.matlib
 import matplotlib.pyplot as plt
-import math
-import pandas as pd
-from pandas import Series,DataFrame
-import seaborn as sns
 from numpy.polynomial import chebyshev
 import time
+import math
 np.seterr(divide='ignore', invalid='ignore')
-M=600
+M=200
 time_st=time.time()
-x0=-math.pi
-x_end=math.pi
+x0=0
+x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
-A=np.zeros((M+1,M+1))
-y=np.zeros((M+1,1))
-solu=np.zeros((M+1,1))
-bt=0.1
-af=0
-A=np.zeros((M+1,M+1))
-tol=1e-4
-A[0][0],A[0][1],A[0][2],A[0][3]=2*bt/(hx**2)+af/hx,-5*bt/(hx**2)-af/hx,4*bt/(hx**2),-bt/(hx**2)
-A[1][0],A[1][1],A[1][2]=bt/(hx**2)+af/hx,-2*bt/(hx**2)-af/hx,bt/(hx**2)
-for i in range(M+1):
-    y[i]=math.sin(x[i])
-    solu[i]=np.e**(-bt*2)*np.sin(x[i]-af*2)
-    if i>=2 and i<=M-1:
-        A[i][i-2],A[i][i-1]=-af/(2*hx),bt/(hx**2)+4*af/(2*hx)
-        A[i][i],A[i][i+1]=-2*bt/(hx**2)-3*af/(2*hx),bt/(hx**2)
-    '''
-    if i==M:
-        A[M][M-3],A[M][M-2]=-bt/(hx**2),4*bt/(hx**2)-af/hx
-        A[M][M-1],A[M][M]=-5*bt/(hx**2)+4*af/hx,2*bt/(hx**2)-3*af/hx
-    '''
-    if i==M:
-        A[M][1],A[M][M-2]=bt/(hx**2),-af/(2*hx)
-        A[M][M-1],A[M][M]=bt/(hx**2)+4*af/(2*hx),-2*bt/(hx**2)-3*af/hx
+bt=0.04
+bf=0.001
+e=np.zeros((M+1,1))
+BB=np.zeros((3*M+3,3*M+3))
+B=np.zeros((M+1,M+1)) 
+y=np.zeros((3*M+3,1))
+tol=1e-3    
+for i in range(0,M+1):
+    if i==0:
+        y[i]=0
+        y[M+1+i]=-2*np.cos(2*np.pi*x[i])
+        y[2*M+2+i]=2*np.sin(2*np.pi*x[i])
+        e[0]=0
+        B[0][0],B[0][1]=-2*bt/(hx**2),bt/(hx**2)
+        B[0][M-1]=bt/(hx**2)
+    elif 0<i<M:
+        y[i]=0
+        y[M+1+i]=-2*np.cos(2*np.pi*x[i])
+        y[2*M+2+i]=2*np.sin(2*np.pi*x[i])
+        e[i]=1
+        B[i][i-1],B[i][i],B[i][i+1]=bt/(hx**2),-2*bt/(hx**2),bt/(hx**2)
+    else:
+        y[i]=0
+        y[M+1+i]=-2*np.cos(2*np.pi*x[i])
+        y[2*M+2+i]=2*np.sin(2*np.pi*x[i])
+        e[i]=0
+        B[M][M],B[M][M-1]=-2*bt/(hx**2),bt/(hx**2)
+        B[M][1]=bt/(hx**2)
+
+BB[0:M+1,0:M+1],BB[M+1:2*M+2,M+1:2*M+2]=B,B
+BB[2*M+2:3*M+3,2*M+2:3*M+3]=B+np.eye(M+1)
+BB[0:M+1,2*M+2:3*M+3]=(-1/bf)*np.eye(M+1)
+BB[M+1:2*M+2,2*M+2:3*M+3]=np.eye(M+1)
+BB[2*M+2:3*M+3,0:M+1],BB[2*M+2:3*M+3,M+1:2*M+2]=-0.4*np.eye(M+1),-1*np.eye(M+1)
+
+
 def err(x,y,h):
-    return (1/15)*(12*(x-y)+6*h*(np.dot(A,x)+np.dot(A,y)))
+    return (1/15)*(12*(x-y)+6*h*(np.dot(BB,x)+np.dot(BB,y)))
 def fun1(x,y):
-     return np.dot(A,y)
+    b=np.zeros((3*M+3,1))
+    u=y[0:M+1]
+    v=y[M+1:2*M+2]
+    w=y[2*M+2:3*M+3]
+    
+    for j in range(0,M+1):
+        b[j]=-(u[j]**3+u[j]*v[j])/bf
+        b[M+1+j]=0.07*(u[j]-0.7)*(u[j]-1.3)/((u[j]-0.7)*(u[j]-1.3)+0.1)
+        b[2*M+2+j]=-(v[j]**2)*w[j]+0.035*(u[j]-0.7)*(u[j]-1.3)/((u[j]-0.7)*(u[j]-1.3)+0.1)
+  
+    '''
+    u=np.array(y[0:M+1])
+    w=np.array(y[M+1:2*M+2])
+    v=np.array(y[2*M+2:3*M+3])
+    u=u.reshape((201,1))
+    w=w.reshape((201,1))
+    v=v.reshape((201,1))
+    #b[0:M+1]=-(u**3+u*v)/bf
+    #b[M+1:2*M+2]=0.07*(u-0.07*e)*(u-0.13*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
+    #b[2*M+2:3*M+3]=-(v**2)*w-v-0.4*u+0.035*(u-0.07*e)*(u-0.13*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
+    u1=-(u**3+u*v)/bf
+    v1=0.07*(u-0.07*e)*(u-0.13*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
+    w1=-(v**2)*w-v-0.4*u+0.035*(u-0.07*e)*(u-0.13*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
+    b=np.vstack((u1, v1, w1))'''
+    b=b.reshape((603,1))
+    U=np.dot(BB,y).reshape((3*M+3,1))
+    uuu=U+b
+    uuu=uuu.reshape((603,))
+    return uuu
 def RKC(f,t0,t_end,h,u0,s):
     h_v=[h]
     h1=h
@@ -61,8 +99,8 @@ def RKC(f,t0,t_end,h,u0,s):
         b=np.zeros(s+1)
         t=np.zeros(s+1)
         t1=np.zeros(s+1)
-        k=np.zeros((M+1,4))
-        ky=np.zeros((M+1,2))
+        k=np.zeros((3*M+3,4))
+        ky=np.zeros((3*M+3,2))
         ky[:,0]=y[:,-1]
         c[0]=0
         b[0]=1
@@ -108,28 +146,35 @@ def RKC(f,t0,t_end,h,u0,s):
             ky[:,1]=fun1(tc[-1]+c[j]*h,k[:,3])
             k[:,1]=k[:,2]
             k[:,2]=k[:,3]
-        tc.append(tc[-1]+h1)
-        yc=k[:,3]
+        tc.append(tc[-1]+h)
+        if counter==0:
+            yc=k[:,3]
+            counter+=1
+        else :
+            yc=k[:,3]
         y = np.column_stack((y, yc))
     return np.array(tc),np.array(y)
 t0=0
 t_end=2
 h=0.01
-eig1,abcd=np.linalg.eig(A)
+eig1,abcd=np.linalg.eig(BB)
 eig2=np.max(np.abs(eig1))
 print(eig2)
-s2=math.sqrt(h*eig2/0.65)
+s2=math.sqrt(h*eig2/0.45)
 s=math.ceil(s2)
-print(s)
+
+print(fun1(x,y))
 if s<3:
     s=2
 tc,y=RKC(fun1,t0,t_end,h,y,s)
 #mse = np.mean((np.array(y[1:M,-1]) - np.array(solu[1:M]))**2)
 #mae = np.mean(np.abs(np.array(y[1:M,-1]) - np.array(solu[1:M])
 # ))
-err=sum([(x - y) ** 2 for x, y in zip(y[1:M,-1], solu[1:M])] )/ len(solu[1:M])
-print(np.sqrt(err))
 time_end=time.time()
+err2=err(y[:,-2],y[:,-1],h)
+err1=np.linalg.norm(err2)
+print(err1)
+'''
 print(time_end-time_st)
 plt.plot(x, y[:,-1],'red')
 plt.plot(x, solu,'blue')
@@ -142,4 +187,5 @@ ax = fig.add_subplot(projection='3d')
 X, Y = np.meshgrid(x, tc)
 ax.plot_surface(X,Y,y.T, rstride=1, cstride=1, cmap='hot')
 plt.title('3D numberical solutions of RKC')
-#plt.show()  
+#plt.show()        
+'''

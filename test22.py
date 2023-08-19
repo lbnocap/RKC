@@ -20,5 +20,17 @@ plt.contour(X, Y, np.abs(result), levels=[1], colors='red')  # 使用绝对值�
 plt.xlabel('Re(z)')
 plt.ylabel('Im(z)')
 plt.title('Contour Plot of Complex Function (|f(z)| = 1)')
-print(np.sqrt(97))
 #plt.show()
+# 创建两个数组
+
+# 创建三个列向量
+vector1 = np.array([[1], [2], [3]])
+vector2 = np.array([[4], [5], [6]])
+vector3 = np.array([[7], [8], [9]])
+
+# 使用 np.vstack() 函数将列向量按行叠加
+stacked_matrix = np.vstack((vector1, vector2, vector3))
+
+print(2*np.sin(2*np.pi*0.02)/0.001)
+print(0.035*0.7*1.3/(0.7*1.3+0.1)-2*np.sin(2*np.pi*0.01)*((-2*np.cos(2*np.pi*0.01))**2))
+

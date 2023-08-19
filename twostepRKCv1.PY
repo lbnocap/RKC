@@ -19,7 +19,6 @@ y=np.zeros((M+1,1))
 solu=np.zeros((M+1,1))
 bt=0.1
 af=0
-A=np.zeros((M+1,M+1))
 tol=1e-4
 A[0][0],A[0][1],A[0][2],A[0][3]=2*bt/(hx**2)+af/hx,-5*bt/(hx**2)-af/hx,4*bt/(hx**2),-bt/(hx**2)
 A[1][0],A[1][1],A[1][2]=bt/(hx**2)+af/hx,-2*bt/(hx**2)-af/hx,bt/(hx**2)
@@ -38,7 +37,7 @@ for i in range(M+1):
         A[M][1],A[M][M-2]=bt/(hx**2),-af/(2*hx)
         A[M][M-1],A[M][M]=bt/(hx**2)+4*af/(2*hx),-2*bt/(hx**2)-3*af/hx
 def err(x,y,h):
-    return (1/10 )*(12*(x-y)+6*h*(np.dot(A,x)+np.dot(A,y)))
+    return (0.17 )*(12*(x-y)+6*h*(np.dot(A,x)+np.dot(A,y)))
 def fun1(x,y):
      return np.dot(A,y)
 def RKC(f,t0,t_end,h,u0,s):
@@ -95,9 +94,6 @@ def RKC(f,t0,t_end,h,u0,s):
         k[:,2]=k[:,1]
         k[:,1]=k[:,0]
         for j in range(2,s+1):
-            cheb_poly1 = chebyshev.Chebyshev([0] * (j + 1))
-            cheb_poly1.coef[-1] = 1
-            tj=cheb_poly1.deriv(2)
             k[:,3]=u[j]*k[:,2]+v[j]*k[:,1]+(1-u[j]-v[j])*k[:,0]+u1[j]*h*ky[:,1]
             #if j==4:
                 #print(k[4])

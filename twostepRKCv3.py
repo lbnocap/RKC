@@ -20,7 +20,7 @@ solu=np.zeros((M+1,1))
 bt=0.1
 af=0
 A=np.zeros((M+1,M+1))
-tol=1e-3        
+tol=1e-4        
 A[0][0],A[0][1],A[0][2],A[0][3]=2*bt/(hx**2)+af/hx,-5*bt/(hx**2)-af/hx,4*bt/(hx**2),-bt/(hx**2)
 A[1][0],A[1][1],A[1][2]=bt/(hx**2)+af/hx,-2*bt/(hx**2)-af/hx,bt/(hx**2)
 for i in range(M+1):
@@ -112,7 +112,7 @@ def RKC(f,t0,t_end,h,u0,s):
             k[:,2]=k[:,3]
         #r=1
         cc=t3(w0)*t5(w0)/(t4(w0)**2)
-        #yt=1/np.sqrt(cc)
+        yt=1/np.sqrt(cc)
         #yt=0.6
         #bn=(1+r)/(yt*(1+r*yt))
         #bf1=(r**2)*(1-yt)/(1+yt*r)
@@ -121,14 +121,13 @@ def RKC(f,t0,t_end,h,u0,s):
             r=1
         if counter>=1:
             r=h1/tc[-1]
-        yt=0.6
         bn=(1+r)/(yt*(1+r*yt))
         bf1=(r**2)*(1-yt)/(1+yt*r)
         b0=1-bn-bf1
         C=1/6+bf1/6-bn*(yt**3)*cc/6
         if counter==0:
             yc=k[:,3]
-            err2=C*err(y[:,-1],yc,h1)/tol
+            err2=C*err(y[:,-1],yc,h1)/1e-2
             err1=np.linalg.norm(err2)/math.sqrt(M+1)
             fac=0.8*((1/err1)**(1/3))
             if err1<1 or h1==0.0005:
@@ -142,7 +141,7 @@ def RKC(f,t0,t_end,h,u0,s):
                 h=h1
                 if h1<0.0005:
                     h1=0.0005
-                s2=math.sqrt(h1*eig2/1.0)
+                s2=math.sqrt(h1*eig2/0.45)
                 s=math.ceil(s2)
                 if s<3:
                     s=3
@@ -167,17 +166,17 @@ def RKC(f,t0,t_end,h,u0,s):
                 if h1<0.0005:
                     h1=0.0005
                 h=yt*h1
-                s2=math.sqrt(h1*eig2/1.0)
+                s2=math.sqrt(h1*eig2/0.45)
                 s=math.ceil(s2)
                 if s<3:
                     s=3
     return np.array(tc),np.array(y),s_max,nfe
 t0=0
 t_end=2
-h=0.1
+h=0.01
 eig1,abcd=np.linalg.eig(A)
 eig2=np.max(np.abs(eig1))
-s2=math.sqrt(h*eig2/1.0)
+s2=math.sqrt(h*eig2/0.45)
 s=math.ceil(s2)
 if s<3:
     s=3

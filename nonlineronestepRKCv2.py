@@ -2,7 +2,7 @@ import numpy as np
 import numpy.matlib
 import matplotlib.pyplot as plt
 from numpy.polynomial import chebyshev
-import time
+import time   #改造二步定步长非线性
 import math
 np.seterr(divide='ignore', invalid='ignore')
 M=200

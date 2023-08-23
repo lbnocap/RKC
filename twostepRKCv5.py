@@ -110,8 +110,8 @@ def RKC(f,t0,t_end,h,u0,s):
             k[:,2]=k[:,3]
         r=1
         cc=t3(w0)*t5(w0)/(t4(w0)**2)
-        #yt=1/np.sqrt(cc)
-        yt=0.6
+        yt=1/np.sqrt(cc)
+        #yt=0.6
         bn=(1+r)/(yt*(1+r*yt))
         bf1=(r**2)*(1-yt)/(1+yt*r)
         b0=1-bn-bf1
@@ -133,7 +133,7 @@ h=0.01
 eig1,abcd=np.linalg.eig(A)
 eig2=np.max(np.abs(eig1))
 print(eig2)
-s2=math.sqrt(h*eig2/1.0)
+s2=math.sqrt(h*eig2/0.45)
 s=math.ceil(s2)
 print(s)
 if s<3:
@@ -157,4 +157,4 @@ ax = fig.add_subplot(projection='3d')
 X, Y = np.meshgrid(x, tc)
 ax.plot_surface(X,Y,y.T, rstride=1, cstride=1, cmap='hot')
 plt.title('3D numberical solutions of RKC')
-#plt.show()        
+plt.show()        

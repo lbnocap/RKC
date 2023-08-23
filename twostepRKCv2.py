@@ -121,6 +121,7 @@ def RKC(f,t0,t_end,h,u0,s):
             err2=C*err(y[:,-1],yc,h1)/1e-2
             err1=np.linalg.norm(err2)/math.sqrt(M+1)
             fac=0.8*((1/err1)**(1/3))
+            print(C)
             if err1<1 or h1==0.0005:
                 y = np.column_stack((y, yc))
                 counter+=1

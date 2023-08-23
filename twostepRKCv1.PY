@@ -76,6 +76,7 @@ def RKC(f,t0,t_end,h,u0,s):
         v=np.zeros(s+1)
         v[0],v[1]=0,0  
         u[0],u1[1]=0,w1/w0
+        print(u1[1])
         c[1]=u1[1]
         for j in range(2,s+1):
          t[j]=2*w0*t[j-1]-t[j-2]
@@ -131,7 +132,6 @@ eig1,abcd=np.linalg.eig(A)
 eig2=np.max(np.abs(eig1))
 s2=math.sqrt(h*eig2/1.138)
 s=math.ceil(s2)
-print(s)
 if s<=3:
     s=3
 tc,y,nfr=RKC(fun1,t0,t_end,h,y,s)
@@ -144,6 +144,8 @@ time_end=time.time()
 print(time_end-time_st)
 print(len(tc))
 print("评估次数：",nfr)
+print("S:",s)
+
 plt.plot(x, y[:,-1],'red')
 plt.plot(x, solu,'blue')
 plt.title(' t=2 af=0.1 beta=0.05  numberical solutions of RKC')

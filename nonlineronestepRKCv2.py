@@ -2,7 +2,7 @@ import numpy as np
 import numpy.matlib
 import matplotlib.pyplot as plt
 from numpy.polynomial import chebyshev
-import time
+import time   #改造二步定步长非线性
 import math
 np.seterr(divide='ignore', invalid='ignore')
 M=200
@@ -55,10 +55,10 @@ def fun1(x,y):
     for j in range(0,M+1):
         b[j]=-(u[j]**3+u[j]*v[j])/bf
         b[M+1+j]=0.07*(u[j]-0.7)*(u[j]-1.3)/((u[j]-0.7)*(u[j]-1.3)+0.1)
-        b[2*M+2+j]=-(v[j]**2)*w[j]-v[j]-0.4*u[j]+0.035*(u[j]-0.07)*(u[j]-0.13)/((u[j]-0.7)*(u[j]-1.3)+0.1)
+        b[2*M+2+j]=-(v[j]**2)*w[j]+0.035*(u[j]-0.07)*(u[j]-0.13)/((u[j]-0.7)*(u[j]-1.3)+0.1)
     u=np.array(y[0:M+1])
-    w=np.array(y[M+1:2*M+2])
-    v=np.array(y[2*M+2:3*M+3])
+    v=np.array(y[M+1:2*M+2])
+    w=np.array(y[2*M+2:3*M+3])
     '''
     u=u.reshape((201,1))
     w=w.reshape((201,1))
@@ -71,7 +71,7 @@ def fun1(x,y):
     #v1=0.07*(u-0.07*e)*(u-0.13*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
     #w1=-(v**2)*w-v-0.4*u+0.035*(u-0.07*e)*(u-0.13*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
     #U=np.dot(BB,y)
-    return np.dot(BB,y)
+    return np.dot(BB,y)+b
 def err(x,y,h):
     return (1/15)*(12*(x-y)+6*h*(fun1(h,x)+fun1(h,y)))
 def RKC(f,t0,t_end,h,u0,s):
@@ -123,6 +123,10 @@ def RKC(f,t0,t_end,h,u0,s):
         c[1]=u1[1]
         k[:,2]=k[:,1]
         k[:,1]=k[:,0]
+        if tc[-1]==0:
+            1
+            print(ky[:,0])
+            #print(bbb)
         for j in range(2,s+1):
             cheb_poly1 = chebyshev.Chebyshev([0] * (j + 1))
             cheb_poly1.coef[-1] = 1
@@ -147,7 +151,7 @@ def RKC(f,t0,t_end,h,u0,s):
     return np.array(tc),np.array(y)
 t0=0
 t_end=2
-h=0.01
+h=0.05
 eig1,abcd=np.linalg.eig(BB)
 eig2=np.max(np.abs(eig1))
 print(eig2)
@@ -166,7 +170,8 @@ time_end=time.time()
 print(time_end-time_st)
 err2=err(y[:,-2],y[:,-1],h)
 err1=np.linalg.norm(err2)
-print(err1)
+print("err:",err1)
+#print(y[:,-1])
 #plt.plot(x, y[:,-1],'red')
 #plt.plot(x, solu,'blue')
 #plt.title(' t=2 af=0.1 beta=0.05  numberical solutions of RKC')

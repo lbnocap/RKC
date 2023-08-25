@@ -11,7 +11,7 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.04
-bf=0.001
+bf=0.1
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))
 B=np.zeros((M+1,M+1)) 
@@ -23,7 +23,7 @@ for i in range(0,M+1):
         y[M+1+i]=-2*np.cos(2*np.pi*x[i])
         y[2*M+2+i]=2*np.sin(2*np.pi*x[i])
         e[0]=0
-        B[0][0],B[0][1]=-2*bt/(hx**2),bt/(   hx**2)
+        B[0][0],B[0][1]=-2*bt/(hx**2),bt/(hx**2)
         B[0][M-1]=bt/(hx**2)
     elif 0<i<M:
         y[i]=0
@@ -35,7 +35,7 @@ for i in range(0,M+1):
         y[i]=0
         y[M+1+i]=-2*np.cos(2*np.pi*x[i])
         y[2*M+2+i]=2*np.sin(2*np.pi*x[i])
-        e[i]=0
+        e[i]=0 
         B[M][M],B[M][M-1]=-2*bt/(hx**2),bt/(hx**2)
         B[M][1]=bt/(hx**2)
 
@@ -52,7 +52,7 @@ def fun1(x,z):
     w=z[2*M+2:3*M+3]
     
     for j in range(0,M+1):
-        b[j]=-(u[j]**3+u[j]*v[j])/bf
+        b[j]=(-1/bf)*(u[j]**3+u[j]*v[j])
         b[M+1+j]=0.07*(u[j]-0.7)*(u[j]-1.3)/((u[j]-0.7)*(u[j]-1.3)+0.1)
         b[2*M+2+j]=-((v[j])**2)*w[j]+0.035*(u[j]-0.7)*(u[j]-1.3)/((u[j]-0.7)*(u[j]-1.3)+0.1)
     '''
@@ -66,14 +66,17 @@ def fun1(x,z):
     #b[M+1:2*M+2]=0.07*(u-0.07*e)*(u-0.13*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
     #b[2*M+2:3*M+3]=-(v**2)*w-v-0.4*u+0.035*(u-0.07*e)*(u-0.13*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
     u1=-(u**3+u*v)/bf
-    v1=0.07*(u-0.07*e)*(u-0.13*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
-    w1=-(v**2)*w-v-0.4*u+0.035*(u-0.07*e)*(u-0.13*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
+    v1=0.07*(u-0.7*e)*(u-1.3*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
+    w1=-(v**2)*w+0.035*(u-0.7*e)*(u-1.3*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
     b=np.vstack((u1, v1, w1))'''
     b=b.reshape((603,1))
     U=np.dot(BB,z).reshape((3*M+3,1))
-    return np.array(U+b)
+    return U+b
 def err(x,y,h):
-    return (0.17 )*(12*(x-y)+6*h*(fun1(h,x)+fun1(h,y)))
+    x1=x.reshape((3*M+3,1))
+    y1=y.reshape((3*M+3,1))
+    z1=12*(x1-y1)
+    return (0.17 )*(z1+6*h*(fun1(h,x1)+fun1(h,y1)))
 
 eig1,abcd=np.linalg.eig(BB)
 eig2=np.max(np.abs(eig1))
@@ -153,7 +156,7 @@ def RKC(f,t0,t_end,h,u0,s):
         for j in range(2,s+1):
             k3=u[j]*k2+v[j]*k1+(1-u[j]-v[j])*k0+u1[j]*h*ky1
 
-            if tc[-1]==0 and j==8:
+            if tc[-1]==0 and j==2:
                1
                #print(k3)
             ky1=fun1(tc[-1]+c[j]*h,k3)
@@ -173,12 +176,15 @@ def RKC(f,t0,t_end,h,u0,s):
         C=1/6+bf1/6-bn*(bs*t5(w0)*(w1**3)*(yt**3)/(6*bb))
         
         if counter==0:
-            yc=(1-bs)*y[:,-1]+bs*k3
+            yc=(1-bs)*k0+bs*k3
+           # print(yc)
             counter+=1
             h=yt*h1
         else :
-            yb=(1-bs)*y[:,-1]+bs*k3
-            yc=bf1*y[:,-2]+b0*y[:,-1]+bn*yb
+            k02=y[:,-2]
+            k02=k02.reshape((603,1))
+            yb=(1-bs)*k0+bs*k3
+            yc=bf1*k02+b0*k0+bn*yb
             if tc[-1] + h1 > t_end:
                  h1 = t_end -tc[-1]
             h=yt*h1
@@ -186,9 +192,8 @@ def RKC(f,t0,t_end,h,u0,s):
     return np.array(tc),np.array(y),nfe
 t0=0
 t_end=1.1
-h=0.1
-s2=np.sqrt(h*eig2/0.65)                                           
-
+h=0.001
+s2=np.sqrt(h*eig2/1.138)                                           
 s=int(s2)
 print(fun1(x,y))
 #print(y)
@@ -204,10 +209,11 @@ time_end=time.time()
 print(time_end-time_st)
 print(len(tc))
 print("评估次数：",nfr)
+print("s:",s)
 err2=err(y[:,-2],y[:,-1],h)
-#print(y[:,1])
+#print(y[:,3])
 err1=np.linalg.norm(err2)
-print(err1)
+print("err:",err1)
 #plt.plot(x, y[:,-1],'red')
 #plt.plot(x, solu,'blue')
 #plt.title(' t=2 af=0.1 beta=0.05  numberical solutions of RKC')

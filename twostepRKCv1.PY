@@ -17,8 +17,8 @@ hx=x[1]-x[0]
 A=np.zeros((M+1,M+1))
 y=np.zeros((M+1,1))
 solu=np.zeros((M+1,1))
-bt=0.1
-af=0
+bt=0.05
+af=0.1
 tol=1e-4
 A[0][0],A[0][1],A[0][2],A[0][3]=2*bt/(hx**2)+af/hx,-5*bt/(hx**2)-af/hx,4*bt/(hx**2),-bt/(hx**2)
 A[1][0],A[1][1],A[1][2]=bt/(hx**2)+af/hx,-2*bt/(hx**2)-af/hx,bt/(hx**2)
@@ -132,6 +132,7 @@ eig1,abcd=np.linalg.eig(A)
 eig2=np.max(np.abs(eig1))
 s2=math.sqrt(h*eig2/1.138)
 s=math.ceil(s2)
+print(s)
 if s<=3:
     s=3
 tc,y,nfr=RKC(fun1,t0,t_end,h,y,s)
@@ -157,4 +158,4 @@ ax = fig.add_subplot(projection='3d')
 X, Y = np.meshgrid(x, tc)
 ax.plot_surface(X,Y,y.T, rstride=1, cstride=1, cmap='hot')
 plt.title('3D numberical solutions of RKC')
-#plt.show()
+plt.show()

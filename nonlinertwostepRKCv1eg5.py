@@ -45,8 +45,6 @@ for i in range(0,M+1):
 
 A[0:M+1,0:M+1]=B
 A[M+1:2*M+2,M+1:M*2+2]=B
-eig1,abcd=np.linalg.eig(A)
-eig2=np.max(np.abs(eig1))
 def g1(t,x):
     return np.exp(-((pi)**2) *bt*t)*(-gm*np.sin(pi*(x-t))-pi*np.cos(pi*(x-t)))+np.exp(-3*((pi)**2) *bt*t)*(np.sin(pi*(x-t))**2)*np.cos(pi*(x-t))
 def g2(t,x):
@@ -54,8 +52,8 @@ def g2(t,x):
 def fun1(t,z):
     U=np.dot(A,z).reshape((2*M+2,1))
     b=np.zeros((2*M+2,1))
-    u=z[0:M+1]
-    v=z[M+1:2*M+2]
+    u=z[0:M+1].copy()
+    v=z[M+1:2*M+2].copy()
     for j in range(0,M+1):
         b[j]=-(u[j]**2)*v[j]+g1(t,x[j])
         b[M+1+j]=-(v[j]**2)*u[j]+g2(t,x[j])
@@ -108,14 +106,14 @@ def RKC(f,t0,t_end,h,u0,s):
         b[0]=b[1]=b[2]=t22(w0)/(t1[2]**2)
         w1=t3(w0)/t4(w0) 
         u[0],u1[1]=0,b[1]*w1
-        k0=y[:,-1]
+        k0=y[:,-1].copy()
         k0=k0.reshape((2*M+2,1))
         ky0=fun1(t[-1],k0)
         k1=k0+u1[1] *h *ky0
         ky1=fun1(t[-1]+u1[1]*h,k1)
         c[1]=u1[1]
-        k2=k1
-        k1=k0
+        k2=k1.copy()
+        k1=k0.copy()
         for j in range(2,s+1):
             cheb_poly1 = chebyshev.Chebyshev([0] * (j + 1))
             cheb_poly1.coef[-1] = 1
@@ -132,8 +130,8 @@ def RKC(f,t0,t_end,h,u0,s):
             #if j==4:
                 #print(k[4])
             ky1=fun1(tc[-1]+c[j]*h,k3)
-            k1=k2
-            k2=k3
+            k1=k2.copy()
+            k2=k3.copy()
         r=1
         cc=t3(w0)*t5(w0)/(t4(w0)**2)
         yt=1/np.sqrt(cc)
@@ -156,7 +154,7 @@ t0=0
 t_end=1
 h=0.01
 eig1,abcd=np.linalg.eig(A)
-eig2=np.max(np.abs(eig1))
+eig2=2*np.max(np.abs(eig1))
 print(eig2)
 s2=math.sqrt(h*eig2/0.45)
 s=math.ceil(s2)

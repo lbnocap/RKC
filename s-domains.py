@@ -6,7 +6,7 @@ from sympy import *
 
 
 # 假设s为切比雪夫多项式的阶数
-s = 30
+s = 20
 # 创建s阶切比雪夫多项式对象
 cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
 cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
@@ -17,7 +17,7 @@ c=np.zeros(s+1)
 b=np.zeros(s+1)
 t=np.zeros(s+1)
 x=np.zeros(s+1)
-w0=1+(2.3/((s)**2))
+w0=1+(5/((s)**2))
 x[0],x[1]=0,0 
 c[0]=0
 b[0]=1
@@ -31,7 +31,7 @@ v[0],v[1]=0,0
 u1=np.zeros(s+1)
 # 计算s阶切比雪夫多项式在特定点的值\w0=
 #w11=t3(w0)/t4(w0)
-w11=1/(0.245*(s**2))
+w11=1/(0.20*(s**2))
 u1[0],u1[1]=0,w11/w0
 c[1]=w11/w0
 for j in range(2,s+1):
@@ -49,7 +49,7 @@ def complex_function(z):
 w1=cheb_poly(w0)/t3(w0)
 bb=cheb_poly(w0)
 bs=bb/(t3(w0)*w11) 
-r=0.9
+r=1.9
 cc=bs*(t5(w0)/bb)*(w11**3)
 #yt=((r**3+bf1)/(cc*bn*(r**3)))**(1/3)
 yt=0.7
@@ -63,7 +63,7 @@ bf1=(c[s]*r*(1+r))/(c[s]+2*x[s]*r*yt)-r
 b0=1-bf1-bn
 print(bn)
 print(bf1)
-x = np.linspace(-1000, 0, 1000)
+x = np.linspace(-500, 0, 1000)
 y = np.linspace(-40, 40, 1000)
 X, Y = np.meshgrid(x, y)
 Z =w0+w11*( X + 1j*Y)
@@ -85,8 +85,8 @@ plt.contour(X, Y, np.abs(result1), levels=[1], colors='blue')
 #leftmost_value = complex_function(leftmost_point[0])
 mask1 = np.abs(result1) <= 1
 mask = np.abs(result) <=1
-#plt.imshow(mask,extent=[-1000,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
-#plt.imshow(mask1,extent=[-1000,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
+plt.imshow(mask,extent=[-500,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
+plt.imshow(mask1,extent=[-500,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
 plt.xlabel('Re(z)')
 plt.ylabel('Im(z)')
 plt.title('Contour Plot of Complex Function (|root| = 1) s=30')

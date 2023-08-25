@@ -49,7 +49,7 @@ BB[2*M+2:3*M+3,0:M+1],BB[2*M+2:3*M+3,M+1:2*M+2]=-0.4*np.eye(M+1),-1*np.eye(M+1)
 
 def fun1(x,y):
     u=y[0:M+1]
-    w=y[M+1:2*M+2]
+    v=y[M+1:2*M+2]
     v=y[2*M+2:3*M+3]
     
     for j in range(0,M+1):

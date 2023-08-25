@@ -11,7 +11,7 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.04
-bf=0.001
+bf=0.1
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))
 B=np.zeros((M+1,M+1)) 
@@ -79,7 +79,7 @@ def err(x,y,h):
     return (0.17 )*(z1+6*h*(fun1(h,x1)+fun1(h,y1)))
 
 eig1,abcd=np.linalg.eig(BB)
-eig2=5*np.max(np.abs(eig1)) 
+eig2=np.max(np.abs(eig1))
 print(eig2)
 
 def RKC(f,t0,t_end,h,u0,s):
@@ -95,7 +95,7 @@ def RKC(f,t0,t_end,h,u0,s):
     counter=0
     while tc[-1]<t_end:
         nfe+=s
-        w0=1+(10)/((s)**2)
+        w0=1+(0.05)/((s)**2)
         c=np.zeros(s+1)
         b=np.zeros(s+1)
         t=np.zeros(s+1)
@@ -115,7 +115,7 @@ def RKC(f,t0,t_end,h,u0,s):
         b[0]=1
         t[0]=1
         t[1]=w0
-        w1=1/(0.15*(s**2))
+        w1=1/(0.341*(s**2))
         t1[0]=0
         t1[1]=1
         b[1]=1/t[1]
@@ -192,10 +192,10 @@ def RKC(f,t0,t_end,h,u0,s):
     return np.array(tc),np.array(y),nfe
 t0=0
 t_end=1.1
-h=0.002
-s2=np.sqrt(h*eig2/0.4)                                           
+h=0.001
+s2=np.sqrt(h*eig2/1.138)                                           
 s=int(s2)
-#print(fun1(x,y))
+print(fun1(x,y))
 #print(y)
 if s<=3:
     s=3

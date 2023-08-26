@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from numpy.polynomial import chebyshev
 import time
 import copy
+import math
 
 np.seterr(divide='ignore', invalid='ignore')
 M=200
@@ -13,7 +14,7 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.04
-bf=0.001
+bf=0.1
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))
 B=np.zeros((M+1,M+1)) 
@@ -129,6 +130,7 @@ def RKC(f,t0,t_end,h,u0,s):
     t5=cheb_poly.deriv(3)
     counter=0
     fg1=0
+    s_max=0
     while tc[-1]<t_end:
         nfe+=s+2*fg1+3
         w0=1+(5)/((s)**2)
@@ -199,7 +201,10 @@ def RKC(f,t0,t_end,h,u0,s):
             k1=k2.copy()
             k2=k3.copy()
        
-        r=1
+        if counter==0:
+            r=1
+        elif counter>=1:
+            r=h1/tc[-1]
         #cc=t3(w0)*t5(w0)/(t4(w0)**2)
         bb=cheb_poly(w0)
         bs=bb/(t3(w0)*w1)
@@ -208,17 +213,36 @@ def RKC(f,t0,t_end,h,u0,s):
         bn=(1+r)/(bs*(yt*c[s]+2*x[s]*r*(yt**2)))
         bf1=(c[s]*r*(1+r))/(c[s]+2*x[s]*r*yt)-r
         b0=1-bf1-bn
-        tc.append(tc[-1]+h1)
         C=1/6+bf1/6-bn*(bs*t5(w0)*(w1**3)*(yt**3)/(6*bb))
         
         if counter==0:
             yc=(1-bs)*k0+bs*k3
            # print(yc)
-            counter+=1
-            pu,fg1=ro(tc[-1]+h1,yc)
-            s2=np.sqrt(h1*pu/0.5)                                           
-            s=int(s2)
-            h=yt*h1
+            err2=C*err(y[:,-1],yc,h1)/1e-2
+            err1=np.linalg.norm(err2)/math.sqrt(M+1)
+            fac=0.8*((1/err1)**(1/3))
+            if err1<1 or h1<=0.0005:
+                y = np.column_stack((y, yc))
+                counter+=1
+                tc.append(tc[-1]+h1)
+                if s_max<s:
+                   s_max=s
+                pu,fg1=ro(tc[-1]+h1,yc)
+                s2=math.sqrt(h1*pu/0.5)
+                s=math.ceil(s2)
+                h=yt*h1
+
+
+            if err1>1:
+                h1=min(max(fac,0.1),1.9)*h1
+                h=h1
+                pu,fg1=ro(tc[-1]+h1,yc)
+                s2=math.sqrt(h1*pu/0.5)
+                s=math.ceil(s2)
+                if s<3:
+                    s=3
+                if s<3:
+                    s=3
         else :
             k02=y[:,-2].copy()
             k02=k02.reshape((603,1))
@@ -231,11 +255,13 @@ def RKC(f,t0,t_end,h,u0,s):
             s2=np.sqrt(h1*pu/0.5)                                           
             s=int(s2)
             h=yt*h1
-        y = np.column_stack((y, yc))
+            y = np.column_stack((y, yc))
+            tc.append(tc[-1]+h1)
+
     return np.array(tc),np.array(y),nfe
 t0=0
 t_end=1.1
-h=0.01
+h=0.002
 s2=np.sqrt(h*eig2/0.5)                                           
 s=int(s2)
 print(eig2)
@@ -255,7 +281,7 @@ tc,y,nfr=RKC(fun1,t0,t_end,h,y,s)
 #rint(np.sqrt(err))
 time_end=time.time()
 print(time_end-time_st)
-print(len(tc))
+print(tc)
 print("评估次数：",nfr)
 print("s:",s)
 err2=err(y[:,-2],y[:,-1],h)

@@ -47,7 +47,7 @@ def complex_function(z):
 w1=t3(w0)/t4(w0)
 bb=cheb_poly(w0)
 bs=t4(w0)/(t3(w0)**2)
-r=1
+r=1.1
 cc=t3(w0)*t5(w0)/(t4(w0)**2)
 #yt=((r**3+bf1)/(cc*bn*(r**3)))**(1/3)
 yt=0.6

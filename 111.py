@@ -241,13 +241,14 @@ def RKC(f,t0,t_end,h,u0,s):
                 s=math.ceil(s2)
                 if s<3:
                     s=3
-        else:
+        else :
             k02=y[:,-2].copy()
             k02=k02.reshape((603,1))
             yb=(1-bs)*k0+bs*k3
             yc=bf1*k02+b0*k0+bn*yb
             if tc[-1] + h1 > t_end:
                  h1 = t_end -tc[-1]
+    
             pu,fg1=ro(tc[-1]+h1,yc)
             s2=np.sqrt(h1*pu/0.5)                                           
             s=math.ceil(s2)
@@ -256,7 +257,6 @@ def RKC(f,t0,t_end,h,u0,s):
             h=yt*h1
             y = np.column_stack((y, yc))
             tc.append(tc[-1]+h1)
-            
 
     return np.array(tc),np.array(y),nfe
 t0=0

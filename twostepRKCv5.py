@@ -38,7 +38,7 @@ for i in range(M+1):
         A[M][1],A[M][M-2]=bt/(hx**2),-af/(2*hx)
         A[M][M-1],A[M][M]=bt/(hx**2)+4*af/(2*hx),-2*bt/(hx**2)-3*af/hx
 def err(x,y,h):
-    return (1/15)*(12*(x-y)-6*h*(np.dot(A,x)+np.dot(A,y)))
+    return (12*(x-y)-6*h*(np.dot(A,x)+np.dot(A,y)))
 def fun1(x,y):
      return np.dot(A,y)
 def RKC(f,t0,t_end,h,u0,s):

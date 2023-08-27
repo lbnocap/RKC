@@ -144,10 +144,10 @@ def RKC(f,t0,t_end,h,u0,s):
             fac=0.8*((1/err1)**(1/3))
             if err1<1 or h1<=0.0005:
                y = np.column_stack((y, yc))
+               tc.append(tc[-1]+h1)
                if tc[-1] + h1 > t_end:
                  h1 = t_end -tc[-1]
-                 h=yt*h
-               tc.append(tc[-1]+h1)
+                 h=yt*h1
                if s>s_max:
                     s_max=s
             if err1>1:

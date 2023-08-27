@@ -6,7 +6,7 @@ from sympy import *
 
 
 # 假设s为切比雪夫多项式的阶数
-s = 20
+s = 10
 # 创建s阶切比雪夫多项式对象
 cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
 cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
@@ -61,8 +61,7 @@ print(solve(expr))
 bn=(1+r)/(bs*(yt*c[s]+2*x[s]*r*(yt**2)))
 bf1=(c[s]*r*(1+r))/(c[s]+2*x[s]*r*yt)-r
 b0=1-bf1-bn
-print(bn)
-print(bf1)
+
 x = np.linspace(-500, 0, 1000)
 y = np.linspace(-40, 40, 1000)
 X, Y = np.meshgrid(x, y)
@@ -85,6 +84,8 @@ plt.contour(X, Y, np.abs(result1), levels=[1], colors='blue')
 #leftmost_value = complex_function(leftmost_point[0])
 mask1 = np.abs(result1) <= 1
 mask = np.abs(result) <=1
+C=1/6+bf1/6-bn*(bs*t5(w0)*(w1**3)*(yt**3)/(6*bb))
+print(C)
 plt.imshow(mask,extent=[-500,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
 plt.imshow(mask1,extent=[-500,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
 plt.xlabel('Re(z)')

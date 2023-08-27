@@ -13,7 +13,7 @@ x0=0
 x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
-bt=0.04
+bt=1/144
 bf=0.1
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))
@@ -248,7 +248,7 @@ def RKC(f,t0,t_end,h,u0,s):
             k02=k02.reshape((603,1))
             yb=(1-bs)*k0+bs*k3
             yc=bf1*k02+b0*k0+bn*yb
-            tc.append(tc[-1]+h1)
+            
             if tc[-1] + h1 > t_end:
                  h1 = t_end -tc[-1]
     
@@ -257,6 +257,7 @@ def RKC(f,t0,t_end,h,u0,s):
             s=int(s2)
             h=yt*h1
             y = np.column_stack((y, yc))
+            tc.append(tc[-1]+h1)
         
 
     return np.array(tc),np.array(y),nfe

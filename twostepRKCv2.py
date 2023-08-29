@@ -106,7 +106,8 @@ def RKC(f,t0,t_end,h,u0,s):
         if counter==0:
             r=1
         if counter>=1:
-            r=h1/tc[-1]
+            r=h1/(tc[-1]-tc[-2])
+            print(r)
         #cc=t3(w0)*t5(w0)/(t4(w0)**2)
         bb=cheb_poly(w0)
         bs=bb/(t3(w0)*w1)
@@ -145,6 +146,7 @@ def RKC(f,t0,t_end,h,u0,s):
             if err1<1 or h1<=0.0005:
                y = np.column_stack((y, yc))
                tc.append(tc[-1]+h1)
+              
                if tc[-1] + h1 > t_end:
                  h1 = t_end -tc[-1]
                  h=yt*h1

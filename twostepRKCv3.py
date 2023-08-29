@@ -50,7 +50,7 @@ def RKC(f,t0,t_end,h,u0,s):
     counter=0
     nfe=0
     while tc[-1]<t_end:
-        nfe+=s
+        nfe=s+nfe
         cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
         cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
         t3=cheb_poly.deriv(1)

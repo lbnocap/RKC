@@ -14,12 +14,13 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.04
-bf=0.1
+bf=0.001
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))
 B=np.zeros((M+1,M+1)) 
 y=np.zeros((3*M+3,1))
-tol=1e-4  
+atol=1e-4
+rtol=1e-4
 for i in range(0,M+1):
     if i==0:
         y[i]=0
@@ -59,7 +60,7 @@ def fun1(x,z):
         b[M+1+j]=0.07*(u[j]-0.7)*(u[j]-1.3)/((u[j]-0.7)*(u[j]-1.3)+0.1)
         b[2*M+2+j]=-((v[j])**2)*w[j]+0.035*(u[j]-0.7)*(u[j]-1.3)/((u[j]-0.7)*(u[j]-1.3)+0.1)
     '''
-    u=np.array(y[0:M+1])
+    u=np.array(y[0:M+1])    
     w=np.array(y[M+1:2*M+2])
     v=np.array(y[2*M+2:3*M+3])
     u=u.reshape((201,1))
@@ -79,11 +80,20 @@ def err(x,y,h):
     x1=x.reshape((3*M+3,1))
     y1=y.reshape((3*M+3,1))
     z1=12*(x1-y1)
-    return (z1+6*h*(fun1(h,x1)+fun1(h,y1)))
+    return 0.2*(z1+6*h*(fun1(h,x1)+fun1(h,y1)))
 
 eig1,abcd=np.linalg.eig(BB)
 eig2=5*np.max(np.abs(eig1)) 
 
+def err_s(x,y,y1,atol,rtol):
+    ln=len(y)
+    sc=y1.copy()
+    sc1=y1.copy()
+    for i in range(ln):
+        sc[i]=(atol+rtol*max(np.abs(y[i],np.abs(y1[i]))))
+        sc1[i]=x[i]/sc[i]
+    sc1=sc1.reshape((ln,1))
+    return np.linalg.norm(sc1)/np.sqrt(ln)
 def ro(x,y):
     e=1e-8;ln=len(y)
     Rv=y.copy()
@@ -119,6 +129,7 @@ def RKC(f,t0,t_end,h,u0,s):
     y=u0
     nfe=0
     h1=h
+    h_v=[h]
     counter=0
     fg1=0
     s_max=0
@@ -128,7 +139,7 @@ def RKC(f,t0,t_end,h,u0,s):
         t3=cheb_poly.deriv(1)
         t5=cheb_poly.deriv(3)
         nfe=s+fg1+3+nfe
-        w0=1+(5)/((s)**2)
+        w0=1+(0.1)/((s)**2)
         c=np.zeros(s+1)
         b=np.zeros(s+1)
         t=np.zeros(s+1)
@@ -146,7 +157,7 @@ def RKC(f,t0,t_end,h,u0,s):
         b[0]=1
         t[0]=1
         t[1]=w0
-        w1=1/(0.2*(s**2))
+        w1=1/(0.33*(s**2))
         t1[0]=0
         t1[1]=1
         b[1]=1/t[1]
@@ -196,13 +207,14 @@ def RKC(f,t0,t_end,h,u0,s):
        
         if counter==0:
             r=1
-        elif counter==1:
-            r=h1/tc[-1]
+        if counter==1:
+            r=h1/h_v[-1]
+            print(r)
         #cc=t3(w0)*t5(w0)/(t4(w0)**2)
         bb=cheb_poly(w0)
         bs=bb/(t3(w0)*w1)
         #yt=1/np.sqrt(cc)
-        yt=0.7
+        yt=0.6
         bn=(1+r)/(bs*(yt*c[s]+2*x[s]*r*(yt**2)))
         bf1=(c[s]*r*(1+r))/(c[s]+2*x[s]*r*yt)-r
         b0=1-bf1-bn
@@ -211,26 +223,31 @@ def RKC(f,t0,t_end,h,u0,s):
         if counter==0:
             yc=(1-bs)*k0+bs*k3
            # print(yc)
-            err2=C*err(y[:,-1],yc,h1)/1e-2
-            err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
+            #err2=err(y[:,-1],yc,h1)
+            #err1=err_s(err2,y[:,-1],yc,atol,rtol)
+            err2=err(y[:,-1],yc,h1)/atol
+            err1=np.linalg.norm(err2)/math.sqrt(M+1)
+            err1=err1
             fac=0.8*((1/err1)**(1/3))
-            if err1<1 or h1<=0.0005:
+            if err1<1:
                 y = np.column_stack((y, yc))
                 counter+=1
                 tc.append(tc[-1]+h1)
+                h_v.append(h1)
                 if s_max<s:
                    s_max=s
                 pu,fg1=ro(tc[-1]+h1,yc)
-                s2=math.sqrt(h1*pu/0.5)
+                s2=math.sqrt(h1*pu/0.9)
                 s=math.ceil(s2)
+                h1=min(max(fac,0.1),1.1)*h1
                 h=yt*h1
 
 
             if err1>1:
-                h1=min(max(fac,0.1),1.9)*h1
+                h1=min(max(fac,0.1),1.1)*h1
                 h=h1
                 pu,fg1=ro(tc[-1]+h1,yc)
-                s2=math.sqrt(h1*pu/0.5)
+                s2=math.sqrt(h1*pu/0.9)
                 s=math.ceil(s2)
                 if s<3:
                     s=3
@@ -240,49 +257,76 @@ def RKC(f,t0,t_end,h,u0,s):
             k02=k02.reshape((603,1))
             yb=(1-bs)*k0+bs*k3
             yc=bf1*k02+b0*k0+bn*yb
-            err2=C*err(y[:,-1],yc,h1)/tol
-            err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
+            err2=err(y[:,-1],yc,h1)
+            #if tc[-1]+h1==t_end:
+                #print(yc)
+            err1=err_s(err2,y[:,-1],yc,atol,rtol)
+            #err2=err(y[:,-1],yc,h1)/atol
+            #err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
+            print(err1)
+            err4=np.linalg.norm(err2)/math.sqrt(3*M+3)
+            print("err:",err4)
             fac=0.8*((1/err1)**(1/3))
             pu,fg1=ro(tc[-1]+h1,yc)
-            if err1<1 or h1==0.0005 or tc[-1]+h1==t_end:
+            if err1<1 or h1==0.0001:
                 y = np.column_stack((y, yc))
                 tc.append(tc[-1]+h1)
-                if s<3:
-                    s=3
-                h1=min(max(fac,0.1),1.9)*h1
+                h_v.append(h1)
+                h1=min(max(fac,0.1),1.1)*h1
                 if  tc[-1] + h1 > t_end:
                     h1 = t_end -tc[-1]
-                s2=np.sqrt(h1*pu/0.5) 
+                s2=np.sqrt(h1*pu/0.9) 
                 s=math.ceil(s2)
+                if s<3:
+                    s=3
                 h=yt*h1
                 if s>s_max:
                     s_max=s
             else:
-                h1=min(max(fac,0.1),1.9)*h1
-                if h1<0.0005:
-                    h1=0.0005
+                h1=min(max(fac,0.1),1.1)*h1
+                if h1<0.0001:
+                    h1=0.0001
                 if  tc[-1] + h1 > t_end:
                     h1 = t_end -tc[-1]
-                s2=np.sqrt(h1*pu/0.5) 
+                s2=np.sqrt(h1*pu/0.9) 
                 s=math.ceil(s2)
                 h=yt*h1
                 if s<3:
                     s=3
         
-    return np.array(tc),np.array(y),nfe,s_max,c
+    return np.array(tc),np.array(y),nfe,s_max,h1
 t0=0
 t_end=1.1
 h=0.01
+d0=err_s(y,y,y,atol,rtol)
+f0=fun1(0,y)
+d1=err_s(f0,y,y,atol,rtol)
+if d0<10**(-5):
+    h0=10^(-6)
+elif d1<10**(-5):
+    h0=10^(-6)
+else:
+    h0=0.01*(d0/d1)
+yh1=y+h0*f0
+f1=fun1(0,yh1)
+d2=err_s(f0-f1,y,y,atol,rtol)/h0
+d2=max(d1,d2)
+if d2<10**(-15):
+    h01=max(10**(-6),h0*10**(-3))
+else:
+    h01=(0.01/d2)**(1/3)
+h=min(100*h0,h01)
+print(h)
 eig3,fg1=ro(0,y)
 print(eig2,fg1)
 print('eig:',eig3)
-s2=np.sqrt(h*eig3/0.5)                                           
+s2=np.sqrt(h*eig3/0.9)                                           
 s=int(s2)
 #print(fun1(x,y))
 #print(y)
 if s<=3:
     s=3
-tc,y,nfr,s_max,c=RKC(fun1,t0,t_end,h,y,s)
+tc,y,nfr,s_max,h1=RKC(fun1,t0,t_end,h,y,s)
 
 #mse = np.mean((np.array(y[1:M,-1]) - np.array(solu[1:M]))**2)
 #mae = np.mean(np.abs(np.array(y[1:M,-1]) - np.array(solu[1:M])
@@ -295,10 +339,9 @@ print('时间：',time_end-time_st)
 print("步数：",len(tc))
 print("评估次数：",nfr)
 print("s_max:",s_max)
-err2=err(y[:,-3],y[:,-2],h)
+err2=err(y[:,-2],y[:,-1],h1)
 #print(y[:,3])
-err1=0.21*np.linalg.norm(err2)/math.sqrt(3*M+3)
-print("err:",err1)
+err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
 #plt.plot(x, y[:,-1],'red')
 #plt.plot(x, solu,'blue')
 #plt.title(' t=2 af=0.1 beta=0.05  numberical solutions of RKC')

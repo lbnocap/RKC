@@ -14,7 +14,7 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.04
-bf=0.01
+bf=0.0018
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))
 B=np.zeros((M+1,M+1)) 
@@ -207,8 +207,9 @@ def RKC(f,t0,t_end,h,u0,s):
         if counter==0:
             yc=k3.copy()
            # print(yc)
-            err2=err(y[:,-1],yc,h1)/1e-2
+            err2=err(y[:,-1],yc,h1)
             err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
+            print(err1)
             fac=0.8*((1/err1)**(1/3))
             y = np.column_stack((y, yc))
             counter+=1
@@ -249,7 +250,7 @@ def RKC(f,t0,t_end,h,u0,s):
     return np.array(tc),np.array(y),nfe,s_max
 t0=0
 t_end=1.1
-h=0.005
+h=0.001
 eig3,fg1=ro(0,y)
 s2=np.sqrt(h*eig3/0.4)                                           
 s=int(s2)
@@ -281,7 +282,7 @@ print("err:",err1)
 #plt.plot(x, solu,'blue')
 #plt.title(' t=2 af=0.1 beta=0.05  numberical solutions of RKC')
 #plt.xlabel('x')
-#plt.ylabel('y')
+#plt.ylabel('y') 
 #plt.legend()
 #fig = plt.figure()
 #ax = fig.add_subplot(projection='3d')

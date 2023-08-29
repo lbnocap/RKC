@@ -14,7 +14,7 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.04
-bf=0.1
+bf=0.0018
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))
 B=np.zeros((M+1,M+1)) 
@@ -79,13 +79,13 @@ def err(x,y,h):
     x1=x.reshape((3*M+3,1))
     y1=y.reshape((3*M+3,1))
     z1=12*(x1-y1)
-    return (0.17 )*(z1+6*h*(fun1(h,x1)+fun1(h,y1)))
+    return (0.2 )*(z1+6*h*(fun1(h,x1)+fun1(h,y1)))
 
 eig1,abcd=np.linalg.eig(BB)
 eig2=5*np.max(np.abs(eig1)) 
 
 def ro(x,y):
-    e=1e-5;ln=len(y)
+    e=1e-8;ln=len(y)
     Rv=y.copy()
     for j in range(ln):
         if y[j]==0:
@@ -172,14 +172,10 @@ def RKC(f,t0,t_end,h,u0,s):
         k0=y[:,-1].copy()
         k0=k0.reshape((603,1))
         ky0=fun1(t[-1],k0)
-        if tc[-1]==0:
-            1
-            #print(ky0)
-            #print(bbb)
+       
         k1=k0+u1[1] *h *ky0
 
-        if tc[-1]==0:
-            1
+     
             #print(k1)
         ky1=fun1(t[-1]+u1[1]*h,k1)
         if tc[-1]==0:
@@ -190,9 +186,7 @@ def RKC(f,t0,t_end,h,u0,s):
         for j in range(2,s+1):
             k3=u[j]*k2+v[j]*k1+(1-u[j]-v[j])*k0+u1[j]*h*ky1
 
-            if tc[-1]==0 and j==2:
-               1
-               #print(k3)
+           
             ky1=fun1(tc[-1]+c[j]*h,k3)
             k1=k2.copy()
             k2=k3.copy()
@@ -213,7 +207,6 @@ def RKC(f,t0,t_end,h,u0,s):
            # print(yc)
             err2=err(y[:,-1],yc,h1)
             err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
-            print(err1)
             fac=0.8*((1/err1)**(1/3))
             y = np.column_stack((y, yc))
             tc.append(tc[-1]+h1)
@@ -231,9 +224,6 @@ def RKC(f,t0,t_end,h,u0,s):
             k02=k02.reshape((603,1))
             yb=(1-bs)*k0+bs*k3
             yc=bf1*k02+b0*k0+bn*yb
-            err2=err(y[:,-1],yc,h1)
-            err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
-            print(err1/tol)
             pu,fg1=ro(tc[-1]+h1,yc)
             tc.append(tc[-1]+h1)
             if tc[-1] + h1 > t_end:
@@ -243,6 +233,9 @@ def RKC(f,t0,t_end,h,u0,s):
             s=math.ceil(s2)
             if s<3:
                 s=3
+            if s>200:
+                s=200
+                h1=0.5*(s**2)/pu
             if s_max<s:
                 s_max=s
             h=yt*h1
@@ -250,12 +243,11 @@ def RKC(f,t0,t_end,h,u0,s):
     return np.array(tc),np.array(y),nfe,s_max
 t0=0
 t_end=1.1
-h=0.01
+h=0.0005
 eig3,fg1=ro(0,y)
 s2=np.sqrt(h*eig3/0.9)                                           
 s=int(s2)
 print(eig2)
-print(eig2,fg1)
 print('eig:',eig3)
 #print(fun1(x,y))
 #print(y)

@@ -14,7 +14,7 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.04
-bf=0.0018
+bf=0.001
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))
 B=np.zeros((M+1,M+1)) 
@@ -131,7 +131,7 @@ def RKC(f,t0,t_end,h,u0,s):
         t3=cheb_poly.deriv(1)
         t5=cheb_poly.deriv(3)
         nfe=s+fg1+3+nfe
-        w0=1+(0.1)/((s)**2)
+        w0=1+(5)/((s)**2)
         c=np.zeros(s+1)
         b=np.zeros(s+1)
         t=np.zeros(s+1)
@@ -146,10 +146,10 @@ def RKC(f,t0,t_end,h,u0,s):
         x=np.zeros(s+1)
         x[0],x[1]=0,0 
         c[0]=0
-        b[0]=1
+        b[0]=1 
         t[0]=1
         t[1]=w0
-        w1=1/(0.31*(s**2))
+        w1=1/(0.2*(s**2))
         t1[0]=0
         t1[1]=1
         b[1]=1/t[1]
@@ -196,7 +196,7 @@ def RKC(f,t0,t_end,h,u0,s):
         bb=cheb_poly(w0)
         bs=bb/(t3(w0)*w1)
         #yt=1/np.sqrt(cc)
-        yt=0.6
+        yt=0.7
         bn=(1+r)/(bs*(yt*c[s]+2*x[s]*r*(yt**2)))
         bf1=(c[s]*r*(1+r))/(c[s]+2*x[s]*r*yt)-r
         b0=1-bf1-bn
@@ -212,7 +212,7 @@ def RKC(f,t0,t_end,h,u0,s):
             tc.append(tc[-1]+h1)
             counter+=1
             pu,fg1=ro(tc[-1]+h1,yc)
-            s2=math.sqrt(h1*pu/0.9)
+            s2=math.sqrt(h1*pu/0.5)
             s=math.ceil(s2)
             if s<3:
                     s=3
@@ -229,7 +229,7 @@ def RKC(f,t0,t_end,h,u0,s):
             if tc[-1] + h1 > t_end:
                  h1 = t_end -tc[-1]
     
-            s2=np.sqrt(h1*pu/0.9)                                           
+            s2=np.sqrt(h1*pu/0.5)                                           
             s=math.ceil(s2)
             if s<3:
                 s=3
@@ -243,9 +243,9 @@ def RKC(f,t0,t_end,h,u0,s):
     return np.array(tc),np.array(y),nfe,s_max
 t0=0
 t_end=1.1
-h=0.0005
+h=0.00005
 eig3,fg1=ro(0,y)
-s2=np.sqrt(h*eig3/0.9)                                           
+s2=np.sqrt(h*eig3/0.5)                                           
 s=int(s2)
 print(eig2)
 print('eig:',eig3)

@@ -6,25 +6,33 @@ from sympy import *
 
 
 # 假设s为切比雪夫多项式的阶数
-s =16
+s =20
 # 创建s阶切比雪夫多项式对象
-s1=np.ceil(s/3)
+s1=np.ceil(s/4)
 s1=int(s1)
 s2=2*s1
-
+s3=3*s1
 cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
 cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
 cheb_polys1 = chebyshev.Chebyshev([0] * (s1 + 1))
 cheb_polys1.coef[-1] = 1
 cheb_polys2 = chebyshev.Chebyshev([0] * (s2 + 1))
 cheb_polys2.coef[-1] = 1
+cheb_polys3 = chebyshev.Chebyshev([0] * (s3 + 1))
+cheb_polys3.coef[-1] = 1
 t3=cheb_poly.deriv(1)
 t4s1=cheb_polys1.deriv(2)
 t4s2=cheb_polys2.deriv(2)
 t4=cheb_poly.deriv(2)
+t4s3=cheb_polys3.deriv(2)
+t5s3=cheb_polys3.deriv(3)
 t5=cheb_poly.deriv(3)
 t5s1=cheb_polys1.deriv(3)
 t5s2=cheb_polys2.deriv(3)
+t6=cheb_poly.deriv(4)
+t6s1=cheb_polys1.deriv(4)
+t6s2=cheb_polys2.deriv(4)
+t6s3=cheb_polys3.deriv(4)
 c=np.zeros(s+1)
 b=np.zeros(s+1)
 t=np.zeros(s+1)
@@ -45,7 +53,7 @@ v[0],v[1]=0,0
 u1=np.zeros(s+1)
 # 计算s阶切比雪夫多项式在特定点的值\w0=
 #w11=t3(w0)/t4(w0)
-w11=1/(0.18*(s**2))
+w11=1/(0.1*(s**2))
 u1[0],u1[1]=0,w11/w0
 c[1]=w11/w0
 for j in range(2,s+1):
@@ -61,22 +69,28 @@ for j in range(2,s+1):
         
 k[s1]=t5s1(w0)*(w11**3)/(cheb_polys1(w0)*6)
 k[s2]=t5s2(w0)*(w11**3)/(cheb_polys2(w0)*6) 
+k[s3]=t5s3(w0)*(w11**3)/(cheb_polys3(w0)*6)
 k[s]=t5(w0)*(w11**3)/(cheb_poly(w0)*6)  
-coefficients = np.array([[c[s1], c[s2], c[s]],
-                         [x[s1], x[s2],x[s]],
-                        [k[s1], k[s2], k[s]]])
+gs1=t6s1(w0)*(w11**4)/(cheb_polys1(w0)*24)
+gs2=t6s2(w0)*(w11**4)/(cheb_polys2(w0)*24)
+gs3=t6s2(w0)*(w11**4)/(cheb_polys3(w0)*24)
+gs=t6(w0)*(w11**4)/(cheb_polys1(w0)*24)
+coefficients = np.array([[c[s1], c[s2], c[s3],c[s]],
+                         [x[s1], x[s2],x[s3],x[s]],
+                        [k[s1], k[s2], k[s3],k[s]],
+                        [gs1,gs2,gs3,gs]])
 
-constants = np.array([1, 1/2, 1/6])
+constants = np.array([1, 1/2, 1/6,1/24])
 xx=np.linalg.solve(coefficients, constants)
-x1,x2,x3=xx[0],xx[1],xx[2]
-print(x1,x2,x3)
+x1,x2,x3,x4=xx[0],xx[1],xx[2],xx[3]
+print(x1,x2,x3,x4)
 print(x1*k[s1]+x2*k[s2]+x3*k[s])
 def complex_function(z):
     return cheb_poly(z)/cheb_poly(w0)
 w1=cheb_poly(w0)/t3(w0)
 bb=cheb_poly(w0)
 bs=bb/(t3(w0)*w11) 
-r=1.3
+r=1
 cc=bs*(t5(w0)/bb)*(w11**3)
 #yt=((r**3+bf1)/(cc*bn*(r**3)))**(1/3)
 yt=(r-1+np.sqrt((1-r)**2+4*r))/(2*r)
@@ -88,7 +102,6 @@ expr=(1+r)*cc*(r**3)*(xs**3)/(xs+2*x[s]*r*(xs**2))-r*(1+r)/(1+2*x[s]*bs*r*xs)-r*
 #bf1=(c[s]*r*(1+r))/(c[s]+2*x[s]*r*yt)-r
 bn=(1+r)/(yt*(1+yt*r))
 bf1=(r**2)*(1-yt)/(1+yt*r)
-print(bn)
 b0=1-bf1-bn
 x = np.linspace(-100, 0, 1000)
 y = np.linspace(-40, 40, 1000)
@@ -99,7 +112,7 @@ zn=w0+w11*yt*(X+1j*Y)
 values = 1-bs+bs*cheb_poly(Z)/cheb_poly(w0)
 values1 = cheb_poly(z1)/cheb_poly(w0)
 valuesn=(1-bs+bs*cheb_poly(zn)/cheb_poly(w0))
-threerdvalues=(1-x1-x2-x3)+x1*cheb_polys1(zn)/cheb_polys1(w0)+x2*cheb_polys2(zn)/cheb_polys2(w0)+x3*cheb_poly(zn)/cheb_poly(w0)
+threerdvalues=(1-x1-x2-x3-x4)+x1*cheb_polys1(Z)/cheb_polys1(w0)+x2*cheb_polys2(Z)/cheb_polys2(w0)+x3*cheb_polys3(Z)/cheb_polys3(w0)+x4*cheb_poly(Z)/cheb_poly(w0)
 result=(b0+bn*(valuesn)-np.sqrt((b0+bn *(valuesn))**2+4*bf1))/2 
 result1=(b0+bn*(valuesn)+np.sqrt((b0+bn *(valuesn))**2+4*bf1))/2 
 result3=(b0+bn*(threerdvalues)-np.sqrt((b0+bn *(threerdvalues))**2+4*bf1))/2 
@@ -116,8 +129,8 @@ plt.contour(X, Y, np.abs(threerdvalues), levels=[1], colors='blue')
 mask1 = np.abs(result13) <= 1
 mask = np.abs(result3) <=1
 C=1/6+bf1/6-bn*(bs*t5(w0)*(w1**3)*(yt**3)/(6*bb))
-plt.imshow(mask,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
-plt.imshow(mask1,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
+#plt.imshow(mask,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
+#plt.imshow(mask1,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
 plt.xlabel('Re(z)')
 plt.ylabel('Im(z)')
 plt.title('Contour Plot of Complex Function (|root| = 1) s=30')

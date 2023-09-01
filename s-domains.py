@@ -25,6 +25,7 @@ t4=cheb_poly.deriv(2)
 t5=cheb_poly.deriv(3)
 t5s1=cheb_polys1.deriv(3)
 t5s2=cheb_polys2.deriv(3)
+A=np.zeros((s+1,s+1))
 c=np.zeros(s+1)
 b=np.zeros(s+1)
 t=np.zeros(s+1)
@@ -48,7 +49,8 @@ u1=np.zeros(s+1)
 w11=1/(0.18*(s**2))
 u1[0],u1[1]=0,w11/w0
 c[1]=w11/w0
-for j in range(2,s+1):
+A[1,0]=u1[1]
+for j in range(2,s):
          t[j]=2*w0*t[j-1]-t[j-2]
          b[j]=1/t[j] 
          u[j]=2*w0*b[j]/b[j-1]
@@ -58,6 +60,9 @@ for j in range(2,s+1):
          u1[j]=2*w11*b[j]/b[j-1]
          c[j]=u[j]*c[j-1]+v[j]*c[j-2]+u1[j]
          x[j]=u[j]*x[j-1]+v[j]*x[j-2]+u1[j]*c[j-1]
+         A[j+1,:]=u[j]*A[j,:]+v[j]*A[j-1,:]
+         A[j+1,j]=u1[j]
+         A[j+1,1]=A[j+1,1]+0
         
 k[s1]=t5s1(w0)*(w11**3)/(cheb_polys1(w0)*6)
 k[s2]=t5s2(w0)*(w11**3)/(cheb_polys2(w0)*6) 
@@ -122,3 +127,4 @@ plt.xlabel('Re(z)')
 plt.ylabel('Im(z)')
 plt.title('Contour Plot of Complex Function (|root| = 1) s=30')
 plt.show()  
+print(A.shape)

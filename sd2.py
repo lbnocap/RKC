@@ -15,6 +15,8 @@ c=np.zeros(s+1)
 b=np.zeros(s+1)
 t=np.zeros(s+1)
 x=np.zeros(s+1)
+v1=np.zeros(s+1)
+A=np.zeros((s+1,s+1))
 w0=1+(3/((s)**2))
 x[0],x[1]=0,0 
 c[0]=0
@@ -32,7 +34,8 @@ w1=t3(w0)/t4(w0)
 #w1=t3(w0)/t4(w0)
 u1[0],u1[1]=0,w1/w0
 c[1]=w1/w0
-for j in range(2,s+1):
+A[1,0]=u1[1]
+for j in range(2,s):
          t[j]=2*w0*t[j-1]-t[j-2]
          b[j]=1/t[j] 
          u[j]=2*w0*b[j]/b[j-1]
@@ -40,8 +43,12 @@ for j in range(2,s+1):
          v[j]=-b[j]/b[j-2]
             #print(v[j])
          u1[j]=2*w1*b[j]/b[j-1]
+         v1[j]=-(1-b[j-1]*t[j-1])*u1[j]
          c[j]=u[j]*c[j-1]+v[j]*c[j-2]+u1[j]
          x[j]=u[j]*x[j-1]+v[j]*x[j-2]+u1[j]*c[j-1]
+         A[j+1,:]=u[j]*A[j,:]+v[j]*A[j-1,:]
+         A[j+1,j]=u1[j]
+         A[j+1,1]=A[j+1,1]+v1[j]
 def complex_function(z):
     return cheb_poly(z)/cheb_poly(w0)
 w1=t3(w0)/t4(w0)
@@ -76,3 +83,4 @@ plt.xlabel('Re(z)')
 plt.ylabel('Im(z)')
 plt.title('Contour Plot of Complex Function (|root| = 1)')
 plt.show()
+print(A)

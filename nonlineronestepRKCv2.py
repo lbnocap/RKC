@@ -195,7 +195,7 @@ def RKC(f,t0,t_end,h,u0,s):
      
         r=1
       
-       
+        
         cc=t3(w0)*t5(w0)/(t4(w0)**2)
         yt=1/np.sqrt(cc)
         #yt=0.8

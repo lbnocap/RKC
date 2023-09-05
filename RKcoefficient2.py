@@ -30,7 +30,7 @@ def  RKcoefficient2(e1=0.15,s=10):
     k=np.zeros(s+1)
     e=np.ones(s+1)
 
-    w0=1+(0.001/((s)**2))
+    w0=1+(0.05/((s)**2))
     x[0],x[1]=0,0 
     k[0],k[1]=0,0
     c[0]=0
@@ -67,4 +67,4 @@ def  RKcoefficient2(e1=0.15,s=10):
     a2=np.dot(a,np.dot(A,e))
     a3=np.dot(a,np.dot(A,e)**2)
     a4=np.dot(a,np.dot(A,np.dot(A,e)))
-    return a1,a2,a3,a4
+    return-1+a1,1/2-a1+a2,-1/6+a1/2-a2+a3,-1/6+a1/2+a4

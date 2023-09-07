@@ -12,7 +12,7 @@ s =20
 s1=np.ceil(s/2)
 s1=int(s1)
 s2=2*s1
-ww=0.15
+ww=0.05
 cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
 cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
 cheb_polys1 = chebyshev.Chebyshev([0] * (s1 + 1))
@@ -114,19 +114,21 @@ eqs=[Eq(x+y+z+g,1),
      Eq(-x/6+b4*y/2+a4[0]*g* k8**3  /2 ,1/6)       
 ]
 '''
-eqs=[Eq(x+y+z+g+k8,1),
-     Eq(-x+b1*y+g*a1[0]+k8*c1[0],1),
-     Eq(x/2+b2*y+a2[0]*g+k8*c2[0],1/2),
-     Eq(-x/6 +b3*y +a3[0]*g+c3[0]*k8,1/6),
-     Eq(-x/6+b4*y/2+a4[0]*g  /2+c4[0]*k8 ,1/6)
+c11,c22,c33,c44=-1+c1,1/2-c1+c2,-1/6+c1/2-c2+c3,-1/6+c1/2+c4
+eqs=[Eq(x+y+z+g,1),
+     Eq(-x+(-1+b1*k)*y+g*a1[0],1),
+     Eq(x/2+(1/2-b1*k8+(k8**2)*b2)*y+a2[0]*g,1/2),
+     Eq(-x/6 +(-1/6+b1*k8/2-b2*(k8**2)+b3*(k8**3))*y +a3[0]*g,1/6),
+     Eq(-x/6 +(-1/6+b1*k8/2+b4*(k8**3))*y/2 +a4[0]*g/2,1/6)
+
 ]
 slu=solve(eqs,[x,y,z,g,k8])
 print(slu)
-x1=slu[0][0]
-x2=slu[0][1]
-x3=slu[0][2]
-x4=slu[0][3]
-x5=slu[0][4]
+x1=slu[1][0]
+x2=slu[1][1]
+x3=slu[1][2]
+x4=slu[1][3]
+x5=slu[1][4]
 x1=complex(x1)
 x2=complex(x2)
 x3=complex(x3)
@@ -136,10 +138,10 @@ print(x4)
 x = np.linspace(-100, 0, 1000)
 y = np.linspace(-40, 40, 1000)                                                                                                                             
 X, Y = np.meshgrid(x, y)
-Z =w0+w11*( X + 1j*Y)
+Z =w0+w11*x5*( X + 1j*Y)
 z1=w0+w1*( X + 1j*Y)
 zn=w0+w11*yt*(X+1j*Y)
-zs=w0+w11*x5*(X+1j*Y)
+zs=w0+w11*(X+1j*Y)
 values = 1-bs+bs*cheb_poly(Z)/cheb_poly(w0)
 values1 =cheb_poly(Z)/cheb_poly(w0)
 values3 =x1+x2*cheb_poly(Z)/cheb_poly(w0)
@@ -175,4 +177,4 @@ plt.show()
 
 
 
-#print(B)
+#print(B)、

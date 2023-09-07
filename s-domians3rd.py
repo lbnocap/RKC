@@ -7,12 +7,13 @@ import RKcoefficient2
 import sympy
 
 # 假设s为切比雪夫多项式的阶数
-s =10
+s =20
 # 创建s阶切比雪夫多项式对象
 s1=np.ceil(s/2)
+print(s1)
 s1=int(s1)
 s2=s1
-ww=0.075
+ww=0.078
 cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
 cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
 cheb_polys1 = chebyshev.Chebyshev([0] * (s1 + 1))
@@ -122,6 +123,7 @@ eqs=[Eq(x+y+z+g+k8,1),
      Eq(-x/6+b4*y/2+a4[0]*g  /2+c4[0]*k8 /2,1/6)
 ]
 slu=solve(eqs,[x,y,z,g,k8])
+print(slu)
 xx=np.zeros(5)
 j=0
 for  i in slu.values():
@@ -133,12 +135,12 @@ x3=xx[4]
 x4=xx[0]
 x5=xx[1]
 x = np.linspace(-100, 0, 1000)
-y = np.linspace(-40, 40, 1000)                                                                                                                             
+y = np.linspace(-10, 10, 1000)                                                                                                                             
 X, Y = np.meshgrid(x, y)
 Z =w0+w11*( X + 1j*Y)
 z1=w0+w1*( X + 1j*Y)
 zn=w0+w11*yt*(X+1j*Y)
-zs=w0+w11*x5*(X+1j*Y)
+zs=w0+w11*(X+1j*Y)
 values = 1-bs+bs*cheb_poly(Z)/cheb_poly(w0)
 values1 =cheb_poly(Z)/cheb_poly(w0)
 values3 =x1+x2*cheb_poly(Z)/cheb_poly(w0)
@@ -163,12 +165,12 @@ mask1 = np.abs(result4) <= 1
 mask = np.abs(result41) <=1
 overlap_mask = mask1 & mask
 C=1/6+bf1/6-bn*(bs*t5(w0)*(w1**3)*(yt**3)/(6*bb))
-plt.imshow(overlap_mask,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=1)
+plt.imshow(overlap_mask,extent=[-100,0,-10,10] ,origin='lower', cmap='Blues', alpha=1)
 #plt.imshow(mask,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
 #plt.imshow(mask1,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
 plt.xlabel('Re(z)')
 plt.ylabel('Im(z)')
-plt.title('Contour Plot of Complex Function (|root| = 1) s=30')
+plt.title('Contour Plot of Complex Function (|root| = 1) s=10')
 plt.show()
 
 

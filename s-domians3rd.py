@@ -7,13 +7,13 @@ import RKcoefficient2
 import sympy
 
 # 假设s为切比雪夫多项式的阶数
-s =20
+s =10
 # 创建s阶切比雪夫多项式对象
 s1=np.ceil(s/2)
 print(s1)
 s1=int(s1)
 s2=s1
-ww=0.078
+ww=0.22
 cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
 cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
 cheb_polys1 = chebyshev.Chebyshev([0] * (s1 + 1))
@@ -35,7 +35,7 @@ x=np.zeros(s+1)
 k=np.zeros(s+1)
 e=np.ones((s+1,1))
 
-w0=1+(0.01/((s)**2))
+w0=1+(0.05/((s)**2))
 x[0],x[1]=0,0 
 k[0],k[1]=0,0
 c[0]=0
@@ -66,19 +66,12 @@ for j in range(2,s+1):
          u1[j]=2*w11*b[j]/b[j-1]
          c[j]=u[j]*c[j-1]+v[j]*c[j-2]+u1[j]
          x[j]=u[j]*x[j-1]+v[j]*x[j-2]+u1[j]*c[j-1]
-         A[j,:]=u[j]*A[j-1,:]+v[j]*A[j-2,:]
+         A[j,:]=u[j]*A[j-1,:]+v[j]*A[j-2,:] 
          A[j,j-1]=u1[j]  
          A[j,0]=A[j,0]
         
-k[s1]=t5s1(w0)*(w11**3)/(cheb_polys1(w0)*6)
-k[s2]=t5s2(w0)*(w11**3)/(cheb_polys2(w0)*6) 
-k[s]=t5(w0)*(w11**3)/(cheb_poly(w0)*6)  
-coefficients = np.array([[c[s1], c[s2], c[s]],
-                         [x[s1], x[s2],x[s]],
-                        [k[s1], k[s2], k[s]]])
-constants = np.array([1, 1/2, 1/6])
-def complex_function(z):
-    return cheb_poly(z)/cheb_poly(w0)
+
+
 w1=cheb_poly(w0)/t3(w0)
 bb=cheb_poly(w0)
 bs=bb/(t3(w0)*w11) 
@@ -98,42 +91,31 @@ b1,b2,b3,b4=RKcoefficient2.RKcoefficient2(ww,s)
 a=A[s,:].copy()
 a1=np.dot(a,e)
 a2=np.dot(a,np.dot(A,e))
-a3=np.dot(a,np.dot(A,e)**2)
-a4=np.dot(a,np.dot(A,np.dot(A,e)))
+a3=np.dot(a,np.dot(A,np.dot(A,e)))
+a4=np.dot(a,np.dot(A,e)**2)/2
 c=A[s1,:].copy()
 c1=np.dot(c,e)
 c2=np.dot(c,np.dot(A,e))
-c3=np.dot(c,np.dot(A,e)**2)
-c4=np.dot(c,np.dot(A,np.dot(A,e)))
+c4=np.dot(c,np.dot(A,e)**2)/2
+c3=np.dot(c,np.dot(A,np.dot(A,e)))
 c11,c22,c33,c44=-1+c1,1/2-c1+c2,-1/6+c1/2-c2+c3,-1/6+c1/2+c4
 print(a1,a2,a3,a4,b1,b2,b3,b4)
-x,y,z,g,k8=symbols('x y z g k8')
 '''
-eqs=[Eq(x+y+z+g,1),
-     Eq(-x+b1*y+g*a1[0]*k8,1),
-     Eq(x/2+b2*y+a2[0]*g* k8**2,1/2),
-     Eq(-x/6 +b3*y +a3[0]*g* k8**3,1/6),
-     Eq(-x/6+b4*y/2+a4[0]*g* k8**3  /2 ,1/6)       
-]
 '''
-eqs=[Eq(x+y+z+g+k8,1),
-     Eq(-x+b1*y+g*a1[0]+k8*c1[0],1),
-     Eq(x/2+b2*y+a2[0]*g+k8*c2[0],1/2),
-     Eq(-x/6 +b3*y +a3[0]*g+c3[0]*k8,1/6),
-     Eq(-x/6+b4*y/2+a4[0]*g  /2+c4[0]*k8 /2,1/6)
-]
-slu=solve(eqs,[x,y,z,g,k8])
-print(slu)
-xx=np.zeros(5)
-j=0
-for  i in slu.values():
-       xx[j]=i
-       j=j+1
-x1=xx[2]
-x2=xx[3]
-x3=xx[4]
-x4=xx[0]
-x5=xx[1]
+coefficients = np.array([[1,1,1,1,1],
+                         [-1, b1,0,a1[0],c1[0]],
+                        [1/2, b2,0,a2[0],c2[0]],
+                        [-1/6, b3,0,a3[0],c3[0]],
+                        [-1/6, b4,0,a4[0],c4[0]]])
+
+constants = np.array([1,1, 1/2, 1/6,1/6])
+slu1=np.linalg.solve(coefficients, constants)
+print(slu1)
+x1=slu1[0]
+x2=slu1[1]
+x3=slu1[2]
+x4=slu1[3]
+x5=slu1[4]
 x = np.linspace(-100, 0, 1000)
 y = np.linspace(-10, 10, 1000)                                                                                                                             
 X, Y = np.meshgrid(x, y)

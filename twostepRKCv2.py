@@ -14,8 +14,8 @@ hx=x[1]-x[0]
 A=np.zeros((M+1,M+1))
 y=np.zeros((M+1,1))
 solu=np.zeros((M+1,1))
-bt=0.1
-af=0
+bt=0.05
+af=1
 A=np.zeros((M+1,M+1))
 tol=1e-4
 A[0][0],A[0][1],A[0][2],A[0][3]=2*bt/(hx**2)+af/hx,-5*bt/(hx**2)-af/hx,4*bt/(hx**2),-bt/(hx**2)
@@ -106,7 +106,7 @@ def RKC(f,t0,t_end,h,u0,s):
         if counter==0:
             r=1
         if counter>=1:
-            r=h1/(tc[-1]-tc[-2])
+            r=h1/h_v[-1]
             print(r)
         #cc=t3(w0)*t5(w0)/(t4(w0)**2)
         bb=cheb_poly(w0)
@@ -122,11 +122,14 @@ def RKC(f,t0,t_end,h,u0,s):
             err2=C*err(y[:,-1],yc,h1)/1e-2
             err1=np.linalg.norm(err2)/math.sqrt(M+1)
             fac=0.8*((1/err1)**(1/3))
-            if err1<1 or h1<=0.0005:
+            if err1<1:
                 y = np.column_stack((y, yc))
                 counter+=1
-                h=yt*h1
+                
                 tc.append(tc[-1]+h1)
+                h_v.append(h1)
+                h1=min(max(fac,0.1),1.9)*h1
+                h=yt*h1
                 s_max=s
             if err1>1:
                 h1=max(fac,0.1)*h1
@@ -143,17 +146,18 @@ def RKC(f,t0,t_end,h,u0,s):
             err2=C*err(y[:,-1],yc,h1)/tol
             err1=np.linalg.norm(err2)/math.sqrt(M+1)
             fac=0.8*((1/err1)**(1/3))
-            if err1<1 or h1<=0.0005:
+            if err1<1:
                y = np.column_stack((y, yc))
                tc.append(tc[-1]+h1)
-              
+               h_v.append(h1)
+               h1=min(max(fac,0.1),1.9)*h1
                if tc[-1] + h1 > t_end:
                  h1 = t_end -tc[-1]
-                 h=yt*h1
+               h=yt*h1
                if s>s_max:
                     s_max=s
             if err1>1:
-                h1=max(fac,0.1)*h1
+                h1=min(max(fac,0.1),1.9)*h1
                 if h1<0.0005:
                     h1=0.0005
                 h=yt*h1
@@ -193,4 +197,4 @@ ax = fig.add_subplot(projection='3d')
 X, Y = np.meshgrid(x, tc)
 ax.plot_surface(X,Y,y.T, rstride=1, cstride=1, cmap='hot')
 plt.title('3D numberical solutions of RKC')
-#plt.show() 
+plt.show() 

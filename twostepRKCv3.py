@@ -120,7 +120,7 @@ def RKC(f,t0,t_end,h,u0,s):
         if counter==0:
             r=1
         if counter>=1:
-            r=h1/tc[-1]
+            r=h1/h_v[-1]
         bn=(1+r)/(yt*(1+r*yt))
         bf1=(r**2)*(1-yt)/(1+yt*r)
         b0=1-bn-bf1
@@ -130,11 +130,12 @@ def RKC(f,t0,t_end,h,u0,s):
             err2=C*err(y[:,-1],yc,h1)/1e-2
             err1=np.linalg.norm(err2)/math.sqrt(M+1)
             fac=0.8*((1/err1)**(1/3))
-            if err1<1 or h1==0.0005:
+            if err1<1:
                 y = np.column_stack((y, yc))
                 counter+=1
                 h=yt*h1
                 tc.append(tc[-1]+h1)
+                h_v.append(h1)
                 s_max=s
             if err1>1:
                 h1=max(fac,0.1)*h1
@@ -153,12 +154,13 @@ def RKC(f,t0,t_end,h,u0,s):
             err2=C*err(y[:,-1],yc,h1)/tol
             err1=np.linalg.norm(err2)/math.sqrt(M+1)
             fac=0.8*((1/err1)**(1/3))
-            if err1<1 or h1==0.0005:
+            if err1<1:
                y = np.column_stack((y, yc))
                if tc[-1] + h1 > t_end:
                  h1 = t_end -tc[-1]
                  h=yt*h1
                tc.append(tc[-1]+h1)
+               h_v.append(h1)
                if s>s_max:
                     s_max=s
             if err1>1:

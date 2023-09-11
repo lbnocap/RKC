@@ -7,7 +7,7 @@ import RKcoefficient2
 import sympy
 
 # 假设s为切比雪夫多项式的阶数
-s =20
+s =10
 # 创建s阶切比雪夫多项式对象
 s1=np.ceil(s/2)
 s1=int(s1)
@@ -93,6 +93,7 @@ expr=(1+r)*cc*(r**3)*(xs**3)/(xs+2*x[s]*r*(xs**2))-r*(1+r)/(1+2*x[s]*bs*r*xs)-r*
 bn=(1+r)/(yt*(1+yt*r))
 bf1=(r**2)*(1-yt)/(1+yt*r)
 b0=1-bf1-bn
+
 b1,b2,b3,b4=RKcoefficient2.RKcoefficient2(ww,s)
 a=A[s,:].copy()
 a1=np.dot(a,e)
@@ -106,10 +107,10 @@ c3=np.dot(c,np.dot(A,e)**2)
 c4=np.dot(c,np.dot(A,np.dot(A,e)))
 print(a1,a2,a3,a4,b1,b2,b3,b4)
 x,y,z,g,k8=symbols('x y z g k8')
-'''
+
 eqs=[Eq(x+y+z+g,1),
      Eq(-x+b1*y+g*a1[0]*k8,1),
-     Eq(x/2+b2*y+a2[0]*g* k8**2,1/2),
+     Eq(x/2+b2*y+a2[0]*g* k8**2,1/2),  
      Eq(-x/6 +b3*y +a3[0]*g* k8**3,1/6),
      Eq(-x/6+b4*y/2+a4[0]*g* k8**3  /2 ,1/6)       
 ]
@@ -121,7 +122,7 @@ eqs=[Eq(x+y+z+g,1),
      Eq(-x/6 +(-1/6+b1*k8/2-b2*(k8**2)+b3*(k8**3))*y +a3[0]*g,1/6),
      Eq(-x/6 +(-1/6+b1*k8/2+b4*(k8**3))*y/2 +a4[0]*g/2,1/6)
 
-]
+]'''
 slu=solve(eqs,[x,y,z,g,k8])
 print(slu)
 x1=slu[1][0]
@@ -145,7 +146,7 @@ zs=w0+w11*(X+1j*Y)
 values = 1-bs+bs*cheb_poly(Z)/cheb_poly(w0)
 values1 =cheb_poly(Z)/cheb_poly(w0)
 values3 =x1+x2*cheb_poly(Z)/cheb_poly(w0)
-values31=x3+x4*cheb_poly(zs)/cheb_poly(w0)
+values31=x3+x4*cheb_poly(zs)/cheb_poly(w0)+x5*cheb_polys1(Z)/cheb_polys1(w0)
 valuesn=(1-bs+bs*cheb_poly(zn)/cheb_poly(w0))
 result=(b0+bn*(valuesn)-np.sqrt((b0+bn *(valuesn))**2+4*bf1))/2 
 result1=(b0+bn*(valuesn)+np.sqrt((b0+bn *(valuesn))**2+4*bf1))/2 
@@ -166,7 +167,7 @@ mask1 = np.abs(result4) <= 1
 mask = np.abs(result41) <=1
 overlap_mask = mask1 & mask
 C=1/6+bf1/6-bn*(bs*t5(w0)*(w1**3)*(yt**3)/(6*bb))
-plt.imshow(overlap_mask,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=1)
+#plt.imshow(overlap_mask,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=1)
 #plt.imshow(mask,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
 #plt.imshow(mask1,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
 plt.xlabel('Re(z)')

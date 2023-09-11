@@ -1,10 +1,11 @@
-import numpy as np   #原二步变步长非线性例三
+import numpy as np  #改造二步定步长非线性
 import numpy.matlib
 import matplotlib.pyplot as plt
 from numpy.polynomial import chebyshev
 import time
 import copy
 import math
+from sympy import symbols,Eq,solve,nsolve
 
 np.seterr(divide='ignore', invalid='ignore')
 M=200
@@ -14,13 +15,12 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.04
-bf=0.05
+bf=0.01
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))
 B=np.zeros((M+1,M+1)) 
 y=np.zeros((3*M+3,1))
-atol=1e-5
-rtol=1e-5
+tol=1e-3    
 for i in range(0,M+1):
     if i==0:
         y[i]=0
@@ -44,7 +44,7 @@ for i in range(0,M+1):
         B[M][1]=bt/(hx**2)
 
 BB[0:M+1,0:M+1],BB[M+1:2*M+2,M+1:2*M+2]=B,B
-BB[2*M+2:3*M+3,2*M+2:3*M+3]=B+np.eye(M+1)
+BB[2*M+2:3*M+3,2*M+2:3*M+3]=B+np.eye(M+1) 
 BB[0:M+1,2*M+2:3*M+3]=(-1/bf)*np.eye(M+1)
 BB[M+1:2*M+2,2*M+2:3*M+3]=np.eye(M+1)
 BB[2*M+2:3*M+3,0:M+1],BB[2*M+2:3*M+3,M+1:2*M+2]=-0.4*np.eye(M+1),-1*np.eye(M+1)
@@ -80,16 +80,7 @@ def err(x,y,h):
     x1=x.reshape((3*M+3,1))
     y1=y.reshape((3*M+3,1))
     z1=12*(x1-y1)
-    return 0.105*(z1+6*h*(fun1(h,x1)+fun1(h,y1)))
-def err_s(x,y,y1,atol,rtol):
-    ln=len(y)
-    sc=y1.copy()
-    sc1=y1.copy()
-    for i in range(ln):
-        sc[i]=(atol+rtol*max(np.abs(y[i],np.abs(y1[i]))))
-        sc1[i]=x[i]/sc[i]
-    sc1=sc1.reshape((ln,1))
-    return np.linalg.norm(sc1)/np.sqrt(ln)
+    return (0.1 )*(z1+6*h*(fun1(h,x1)+fun1(h,y1)))
 
 eig1,abcd=np.linalg.eig(BB)
 eig2=5*np.max(np.abs(eig1)) 
@@ -124,29 +115,27 @@ def ro(x,y):
     return R,fg1
 
 
-
-
-
 def RKC(f,t0,t_end,h,u0,s):
-    h1=h
     tc=[t0] #t的初始
     y=u0
-    h_v=[h]
+    nfe=0
+    h1=h
     counter=0
     fg1=0
-    nfe=0
     s_max=0
+   
     while tc[-1]<t_end:
-        nfe=s+nfe+fg1+3
+        s1=np.ceil(s/2)
+        s1=int(s1)
         cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
         cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
         t3=cheb_poly.deriv(1)
-        t4=cheb_poly.deriv(2)
         t5=cheb_poly.deriv(3)
-        t42=chebyshev.Chebyshev([0] * (2 + 1))
-        t42.coef[-1]=1
-        t22=t42.deriv(2) 
-        w0=1+(4)/((s)**2)
+        cheb_polys1 = chebyshev.Chebyshev([0] * (s1 + 1))
+        cheb_polys1.coef[-1] = 1
+        nfe=s+fg1+3+nfe
+        w0=1+(0.05/((s)**2))
+        A=np.zeros((s+1,s+1))
         c=np.zeros(s+1)
         b=np.zeros(s+1)
         t=np.zeros(s+1)
@@ -157,167 +146,147 @@ def RKC(f,t0,t_end,h,u0,s):
         k3=np.zeros((3*M+3,1))
         ky0=np.zeros((3*M+3,1))
         ky1=np.zeros((3*M+3,1))
+        u1=np.zeros(s+1)
+        x=np.zeros(s+1)
+        e=np.ones((s+1,1))
+        x[0],x[1]=0,0 
         c[0]=0
-        b[0]=1
+        b[0]=1 
         t[0]=1
         t[1]=w0
+        w1=1/(0.15*(s**2))
         t1[0]=0
         t1[1]=1
+        b[1]=1/t[1]
         u=np.zeros(s+1)
         u[0],u[1]=0,0
         v=np.zeros(s+1)
-        v1=np.zeros(s+1)
         v[0],v[1]=0,0  
-        v1[0],v1[1]=0,0
-        u1=np.zeros(s+1)
+        u[0],u1[1]=0,w1/w0
+        c[1]=u1[1]
+        A[1,0]=u1[1]
         for j in range(2,s+1):
          t[j]=2*w0*t[j-1]-t[j-2]
          t1[j]=2*t[j-1]+2*w0*t1[j-1]-t1[j-2]
-        b[0]=b[1]=b[2]=t22(w0)/(t1[2]**2)
-        w1=t3(w0)/t4(w0) 
-        u[0],u1[1]=0,b[1]*w1
+         b[j]=1/t[j]
+         v[j]=-b[j]/b[j-2]
+         u[j]=2*w0*b[j]/b[j-1]
+            #print(v[j])
+         u1[j]=2*w1*b[j]/b[j-1]
+         c[j]=u[j]*c[j-1]+v[j]*c[j-2]+u1[j]
+         x[j]=u[j]*x[j-1]+v[j]*x[j-2]+u1[j]*c[j-1]
+         A[j,:]=u[j]*A[j-1,:]+v[j]*A[j-2,:] 
+         A[j,j-1]=u1[j]  
+         A[j,0]=A[j,0]
         k0=y[:,-1].copy()
-        k0=k0.reshape((3*M+3,1))
+        k0=k0.reshape((603,1))
         ky0=fun1(t[-1],k0)
+       
         k1=k0+u1[1] *h *ky0
+
+     
+            #print(k1)
         ky1=fun1(t[-1]+u1[1]*h,k1)
-        c[1]=u1[1]
+        if tc[-1]==0:
+            1
+            #print(ky1)
         k2=k1.copy()
         k1=k0.copy()
         for j in range(2,s+1):
-            cheb_poly1 = chebyshev.Chebyshev([0] * (j + 1))
-            cheb_poly1.coef[-1] = 1
-            tj=cheb_poly1.deriv(2)
-            b[j]=tj(w0)/(t1[j]**2)
-            u[j]=2*w0*b[j]/b[j-1]
-            #print(u[j])
-            v[j]=-b[j]/b[j-2]
-            #print(v[j])
-            u1[j]=2*w1*b[j]/b[j-1]
-            c[j]=u[j]*c[j-1]+v[j]*c[j-2]+u1[j]
-            v1[j]=-(1-b[j-1]*t[j-1])*u1[j]
-            k3=u[j]*k2+v[j]*k1+(1-u[j]-v[j])*k0+u1[j]*h*ky1+v1[j]*h*ky0
-            #if j==4:
-                #print(k[4])
+            k3=u[j]*k2+v[j]*k1+(1-u[j]-v[j])*k0+u1[j]*h*ky1
+            if j==s1:
+                ybs1=k3.copy()
+                ybs1=ybs1.reshape((603,1))
+
+           
             ky1=fun1(tc[-1]+c[j]*h,k3)
             k1=k2.copy()
             k2=k3.copy()
-       
-        if counter==0:
-            r=1
-        elif counter>=1:
-            r=h1/h_v[-1]
-        #cc=t3(w0)*t5(w0)/(t4(w0)**2)
-        cc=t3(w0)*t5(w0)/(t4(w0)**2)
-        #yt=1/np.sqrt(cc)
-        yt=0.8
-        bn=(1+r)/(yt*(1+r*yt))
-        bf1=(r**2)*(1-yt)/(1+yt*r)
-        b0=1-bn-bf1
-        C=1/6+bf1/6-bn*(yt**3)*cc/6
         
-        if counter==0:
-            yc=k3
+        #cc=t3(w0)*t5(w0)/(t4(w0)**2)
+        a=A[s,:].copy()
+        a1=np.dot(a,e)
+        a2=np.dot(a,np.dot(A,e))
+        a4=np.dot(a,np.dot(A,e)**2)/2
+        a3=np.dot(a,np.dot(A,np.dot(A,e)))
+        c=A[s1,:].copy()
+        c1=np.dot(c,e)
+        c2=np.dot(c,np.dot(A,e))
+        c4=np.dot(c,np.dot(A,e)**2)/2
+        c3=np.dot(c,np.dot(A,np.dot(A,e)))
+        b1,b2,b3,b4=-1+a1[0],1/2-a1[0]+a2[0],-1/6+a1[0]/2-a2[0]+a3[0],-1/6+a1[0]/2+a4[0]-a2[0]
+        coefficients = np.array([[1,1,1,1,1],
+                         [-1, b1,0,a1[0],c1[0]],
+                        [1/2, b2,0,a2[0],c2[0]],
+                        [-1/6, b3,0,a3[0],c3[0]],
+                        [-1/6, b4,0,a4[0],c4[0]]])
+
+        constants = np.array([1,1, 1/2, 1/6,1/6])
+        xx=np.linalg.solve(coefficients, constants)
+        xx1=xx[0]
+        xx2=xx[1]
+        xx3=xx[2]
+        xx4=xx[3]
+        xx5=xx[4]
+  
+
+        #yt=1/np.sqrt(cc)
+        #bn=(1+r)/(bs*(yt*c[s]+2*x[s]*r*(yt**2)))
+        #bf1=(c[s]*r*(1+r))/(c[s]+2*x[s]*r*yt)-r
+        #b0=1-bf1-bn
+        #C=1/6+bf1/6-bn*(bs*t5(w0)*(w1**3)*(yt**3)/(6*bb))
+        
+
+
+        if counter<2:
+            bb=cheb_poly(w0)
+            bs=bb/(t3(w0)*w1)
+            yc=(1-bs)*k0+bs*k3
+            yb0=yc.copy()
            # print(yc)
-            err2=err(y[:,-1],yc,h1)
-            err1=err_s(err2,y[:,-1],yc,atol,rtol)
-            fac=0.8*((1/err1)**(1/3))
-            if err1<1:
-                y = np.column_stack((y, yc))
-                counter+=1
-                tc.append(tc[-1]+h1)
-                h_v.append(h1)
-                if s_max<s:
+            y = np.column_stack((y, yc))
+            tc.append(tc[-1]+h1)
+            counter+=1
+            pu,fg1=ro(tc[-1]+h1,yc)
+            s2=math.sqrt(h1*pu/0.25)
+            s=math.ceil(s2)
+            if s_max<s:
                    s_max=s
-                pu,fg1=ro(tc[-1]+h1,yc)
-                s2=math.sqrt(h1*pu/0.4)
-                s=math.ceil(s2)
-                if s<3:
-                    s=3
-                h=yt*h1
-                
-
-
-            if err1>1:
-                #h1=min(max(fac,0.1),1.9)*h1
-                h=h1
-                pu,fg1=ro(tc[-1]+h1,yc)
-                s2=math.sqrt(h1*pu/0.4)
-                s=math.ceil(s2)
-                if s<3:
-                    s=3
-            
         else :
             k02=y[:,-2].copy()
             k02=k02.reshape((603,1))
-            yb=k3
-            yc=bf1*k02+b0*k0+bn*yb
+            yb=k3.copy()
+            yc=xx1*k02+xx2*yb0 +xx3*k0+xx4*yb+xx5*ybs1
+            yb0=yb.copy()
+            pu,fg1=ro(tc[-1]+h1,yc)
+            tc.append(tc[-1]+h1)
+            if tc[-1] + h1 > t_end:
+                 h1 = t_end -tc[-1]
+            s2=np.sqrt(h1*pu/0.25)                                           
+            s=math.ceil(s2)
             err2=err(y[:,-1],yc,h1)
-            err1=err_s(err2,y[:,-1],yc,atol,rtol)
-            err4=np.linalg.norm(err2)/math.sqrt(3*M+3)
-            print("err:",err4)
-            print(err1)
-            fac=0.8*((1/err1)**(1/3))
-            pu,fg1=ro(tc[-1]+h1, yc)
-            if err1<1:
-                y = np.column_stack((y, yc))
-                tc.append(tc[-1]+h1)
-                h_v.append(h1)
-                h1=min(max(fac,0.1),1.9)*h1
-                if  tc[-1] + h1 > t_end:
-                    h1 = t_end -tc[-1]
-                s2=np.sqrt(h1*pu/0.4) 
-                s=math.ceil(s2)
-                h=yt*h1
-                if s<3:
-                    s=3
-                if s>s_max:
-                    s_max=s
-            else:
-                h1=min(max(fac,0.1),1.9)*h1
-                if h1<0.0005:
-                    h1=0.0005
-                if  tc[-1] + h1 > t_end:
-                    h1 = t_end -tc[-1]
-                s2=np.sqrt(h1*pu/0.4) 
-                s=math.ceil(s2)
-                h=yt*h1
-                if s<3:
-                    s=3 
-
-    return np.array(tc),np.array(y),nfe,s_max,h1
+            err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
+            print("err1:",err1)
+           
+               
+            if s>200:
+                s=200
+                h=0.25*(s**2)/pu
+            if s_max<s:
+                s_max=s
+            y = np.column_stack((y, yc))
+    return np.array(tc),np.array(y),nfe,s_max
 t0=0
 t_end=1.1
 h=0.01
-d0=err_s(y,y,y,atol,rtol)
-f0=fun1(0,y)
-d1=err_s(f0,y,y,atol,rtol)
-if d0<10**(-5):
-    h0=10^(-6)
-elif d1<10**(-5):
-    h0=10^(-6)
-else:
-    h0=0.01*(d0/d1)
-yh1=y+h0*f0
-f1=fun1(0,yh1)
-d2=err_s(f0-f1,y,y,atol,rtol)/h0
-d2=max(d1,d2)
-if d2<10**(-15):
-    h01=max(10**(-6),h0*10**(-3))
-else:
-    h01=(0.01/d2)**(1/3)
-h=min(100*h0,h01)
 eig3,fg1=ro(0,y)
-s2=np.sqrt(h*eig3/0.4)                                           
-s=int(s2)
+s2=np.sqrt(h*eig3/0.25)                                           
+s=int(s2) 
 print(eig2)
-print(eig2,fg1)
 print('eig:',eig3)
 #print(fun1(x,y))
 #print(y)
-if s<=3:
-    s=3
-tc,y,nfe,s_max,h1=RKC(fun1,t0,t_end,h,y,s)
+tc,y,nfr,s_max=RKC(fun1,t0,t_end,h,y,s)
 
 #mse = np.mean((np.array(y[1:M,-1]) - np.array(solu[1:M]))**2)
 #mae = np.mean(np.abs(np.array(y[1:M,-1]) - np.array(solu[1:M])
@@ -325,12 +294,12 @@ tc,y,nfe,s_max,h1=RKC(fun1,t0,t_end,h,y,s)
 #err=sum([(x - y) ** 2 for x, y in zip(y[1:M,-1], solu[1:M])] )/ len(solu[1:M])
 #rint(np.sqrt(err))
 time_end=time.time()
-print("时间:",time_end-time_st)
 print(tc)
+print('时间:',time_end-time_st)
 print("步数：",len(tc))
-print("评估次数：",nfe)
+print("评估次数：",nfr)
 print("s_max:",s_max)
-err2=0.17*err(y[:,-3],y[:,-2],h1)
+err2=err(y[:,-3],y[:,-2],h)
 #print(y[:,3])
 err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
 print("err:",err1)
@@ -345,4 +314,5 @@ print("err:",err1)
 #X, Y = np.meshgrid(x, tc)
 #ax.plot_surface(X,Y,y.T, rstride=1, cstride=1, cmap='hot')
 #plt.title('3D numberical solutions of RKC')
+
 

@@ -13,7 +13,8 @@ Z = X + 1j*Y
 
 # 计算复数函数的值
 result = complex_function(Z)
-
+pi=np.pi
+bt=0.03
 # 绘制复数函数等于1的等高线图
 plt.figure(figsize=(6, 6))
 plt.contour(X, Y, np.abs(result), levels=[1], colors='red')  # 使用绝对值表示等高线高度，设置等高线值为1，颜色为红色
@@ -31,8 +32,13 @@ vector3 = np.array([[7], [8], [9]])
 # 使用 np.vstack() 函数将列向量按行叠加
 stacked_matrix = np.vstack((vector1, vector2, vector3))
 
-print(2*np.cos(2*np.pi*1)/0.001)
-print(0.035*0.7*1.3/(0.7*1.3+0.1)-2*np.sin(2*np.pi*0.01)*((-2*np.cos(2*np.pi*0.01))**2))
+#print(2*np.cos(2*np.pi*1)/0.001)
+#print(0.035*0.7*1.3/(0.7*1.3+0.1)-2*np.sin(2*np.pi*0.01)*((-2*np.cos(2*np.pi*0.01))**2))
 
 r=0.8*((1/0.4628)**(1/3))
-print(1/6)
+solu=np.zeros((2*500+2,1))
+x=np.linspace(0,1,500+1,dtype=float)
+for i in range(0,500+1):
+     solu[500+1+i]=np.exp(-((pi)**2) *bt*0.01)*np.cos(pi*(x[i]-0.01))
+     solu[i]=np.exp(-((pi)**2) *bt*0.01)*np.sin(pi*(x[i]-0.01))
+print(solu)

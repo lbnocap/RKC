@@ -1,10 +1,10 @@
 import numpy as np
 from numpy.polynomial import chebyshev
 import matplotlib.pyplot as plt
-import numpy as np
+import numpy as np   #真三阶稳定域
 from sympy import symbols,Eq,solve,nsolve
 import RKcoefficient2
-import sympy
+import pylab as ply
 
 # 假设s为切比雪夫多项式的阶数
 s =10
@@ -13,7 +13,8 @@ s1=np.ceil(s/2)
 print(s1)
 s1=int(s1)
 s2=s1
-ww=0.22
+ww=0.25
+www=0.9
 cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
 cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
 cheb_polys1 = chebyshev.Chebyshev([0] * (s1 + 1))
@@ -35,7 +36,7 @@ x=np.zeros(s+1)
 k=np.zeros(s+1)
 e=np.ones((s+1,1))
 
-w0=1+(0.05/((s)**2))
+w0=1+(www/((s)**2))
 x[0],x[1]=0,0 
 k[0],k[1]=0,0
 c[0]=0
@@ -70,8 +71,6 @@ for j in range(2,s+1):
          A[j,j-1]=u1[j]  
          A[j,0]=A[j,0]
         
-
-
 w1=cheb_poly(w0)/t3(w0)
 bb=cheb_poly(w0)
 bs=bb/(t3(w0)*w11) 
@@ -87,7 +86,7 @@ expr=(1+r)*cc*(r**3)*(xs**3)/(xs+2*x[s]*r*(xs**2))-r*(1+r)/(1+2*x[s]*bs*r*xs)-r*
 bn=(1+r)/(yt*(1+yt*r))
 bf1=(r**2)*(1-yt)/(1+yt*r)
 b0=1-bf1-bn
-b1,b2,b3,b4=RKcoefficient2.RKcoefficient2(ww,s)
+b1,b2,b3,b4=RKcoefficient2.RKcoefficient2(ww,s,www)
 a=A[s,:].copy()
 a1=np.dot(a,e)
 a2=np.dot(a,np.dot(A,e))
@@ -116,8 +115,9 @@ x2=slu1[1]
 x3=slu1[2]
 x4=slu1[3]
 x5=slu1[4]
-x = np.linspace(-100, 0, 1000)
-y = np.linspace(-10, 10, 1000)                                                                                                                             
+print('x1:',x1,x2,x3,x4)
+x = np.linspace(-1.3*(1+w0)/w11, 0, 3000)
+y = np.linspace(-2*s, 2*s, 1000)                                                                                                                             
 X, Y = np.meshgrid(x, y)
 Z =w0+w11*( X + 1j*Y)
 z1=w0+w1*( X + 1j*Y)
@@ -128,14 +128,14 @@ values1 =cheb_poly(Z)/cheb_poly(w0)
 values3 =x1+x2*cheb_poly(Z)/cheb_poly(w0)
 values31=x3+x4*cheb_poly(Z)/cheb_poly(w0)+x5*cheb_polys1(Z)/cheb_polys1(w0)
 valuesn=(1-bs+bs*cheb_poly(zn)/cheb_poly(w0))
-result=(b0+bn*(valuesn)-np.sqrt((b0+bn *(valuesn))**2+4*bf1))/2 
+result=(b0+bn*(valuesn)-np.sqrt((b0+bn *(valuesn))**2+4*bf1))/2  
 result1=(b0+bn*(valuesn)+np.sqrt((b0+bn *(valuesn))**2+4*bf1))/2 
 result3=(b0+bn*(values)-np.sqrt((b0+bn *(values))**2+4*bf1))/2 
 result13=(b0+bn*(values)+np.sqrt((b0+bn *(values))**2+4*bf1))/2
 result4=(values31+np.sqrt((values31)**2+4*values3))/2
 result41=(values31-np.sqrt((values31)**2+4*values3))/2
  #max_real = np.max(np.real(values1[real_mask]))
-plt.figure(figsize=(8,6))
+plt.figure(figsize=(6,6))
 #contour=plt.contour(X, Y, np.abs(values), levels=[1], colors='red')#使用绝对值表示等高线高度，设置等高线值为1，颜色为红色
 #plt.contour(X, Y, np.abs(values), levels=[1], colors='blue')
 #contour=plt.contour(X, Y, np.abs(result3), levels=[1], colors='red')
@@ -147,7 +147,7 @@ mask1 = np.abs(result4) <= 1
 mask = np.abs(result41) <=1
 overlap_mask = mask1 & mask
 C=1/6+bf1/6-bn*(bs*t5(w0)*(w1**3)*(yt**3)/(6*bb))
-plt.imshow(overlap_mask,extent=[-100,0,-10,10] ,origin='lower', cmap='Blues', alpha=1)
+plt.imshow(overlap_mask,extent=[-1.3*(1+w0)/w11,0,-2*s,2*s] ,origin='lower', cmap='Blues', alpha=1,aspect='auto')
 #plt.imshow(mask,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
 #plt.imshow(mask1,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
 plt.xlabel('Re(z)')

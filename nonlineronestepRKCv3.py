@@ -14,7 +14,7 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.04
-bf=0.05
+bf=0.005
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))
 B=np.zeros((M+1,M+1)) 

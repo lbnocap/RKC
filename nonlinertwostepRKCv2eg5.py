@@ -1,4 +1,4 @@
-import numpy as np   #原二阶三步非线性例5
+import numpy as np   #改造二阶三步非线性例5
 import numpy.matlib
 import matplotlib.pyplot as plt
 from numpy.polynomial import chebyshev
@@ -14,7 +14,8 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.03
-gm=-0.01
+af=0
+gm=-1500
 e=np.zeros((M+1,1))
 A=np.zeros((2*M+2,M*2+2))
 B=np.zeros((M+1,M+1)) 
@@ -27,16 +28,22 @@ for i in range(0,M+1):
         solu[M+1+i]=np.exp(-((pi)**2) *bt*1)*np.cos(pi*(x[i]-1))
         y[i]=np.sin(pi*x[i])
         y[M+1+i]=np.cos(pi*x[i])
-        B[0][0],B[0][1]=-2*bt/(hx**2)+gm,bt/(hx**2)
-        B[0][M-1]=-bt/(hx**2)
-        B[M][M-1],B[M][M]=bt/(hx**2),-2*bt/(hx**2)+gm
+        B[0][0],B[0][1]=-2*bt/(hx**2)-(3*af)/(2*hx)+gm,bt/(hx**2)
+        B[0][M-1]=-bt/(hx**2)+2*af/hx
+        B[0][M-2]=-af/(2*hx)
+        B[M][M-1],B[M][M],B[M][M-2]=bt/(hx**2)+2*af/hx,-2*bt/(hx**2)+gm-(3*af)/(2*hx),-af/(2*hx)
         B[M][1]=-bt/(hx**2)
     elif 0<i<M:
         solu[i]=np.exp(-((pi)**2) *bt*1)*np.sin(pi*(x[i]-1))
         solu[M+1+i]=np.exp(-((pi)**2) *bt*1)*np.cos(pi*(x[i]-1))
         y[i]=np.sin(pi*x[i])
         y[M+1+i]=np.cos(pi*x[i])
-        B[i][i-1],B[i][i],B[i][i+1]=bt/(hx**2),-2*bt/(hx**2)+gm,bt/(hx**2)
+        if i==1:
+            B[i][i-1],B[i][i],B[i][i+1]=bt/(hx**2)+2*af/hx,-2*bt/(hx**2)+gm-(3*af)/(2*hx),bt/(hx**2)
+            B[i][M-1]=-af/(2*hx)
+        else:
+           B[i][i-1],B[i][i],B[i][i+1]=bt/(hx**2)+2*af/hx,-2*bt/(hx**2)+gm-(3*af)/(2*hx),bt/(hx**2)
+           B[i][i-2]=-af/(2*hx)
     elif i==M:
         solu[i]=np.exp(-((pi)**2) *bt*1)*np.sin(pi*(x[i]-1))
         solu[M+1+i]=np.exp(-((pi)**2) *bt*1)*np.cos(pi*(x[i]-1))
@@ -117,10 +124,10 @@ def RKC(fun1,t0,t_end,h,u0,s):
         t42=chebyshev.Chebyshev([0] * (2 + 1))
         t42.coef[-1]=1
         t22=t42.deriv(2)
-        if counter<2: 
+        if counter<1: 
            w0=1+(0.9)/((s)**2)
         else:
-           w0=1+(4)/((s)**2)
+           w0=1+(0.9)/((s)**2)
         c=np.zeros(s+1)
         b=np.zeros(s+1)
         t=np.zeros(s+1)
@@ -150,11 +157,12 @@ def RKC(fun1,t0,t_end,h,u0,s):
          t[j]=2*w0*t[j-1]-t[j-2]
          t1[j]=2*t[j-1]+2*w0*t1[j-1]-t1[j-2]
         b[0]=b[1]=b[2]=t22(w0)/(t1[2]**2)
-        if counter<2:
+        if counter<1:   
             w1=t3(w0)/t4(w0)
         else:
-            #w1=1/(0.22* s**2)
-            w1=(1+w0)/(0.45*s**2)
+            w1=t3(w0)/t4(w0)
+            #w1=(1+w0)/(0.45*s**2)
+            #w1=t3(w0)/t4(w0)
         u[0],u1[1]=0,b[1]*w1
         k0=y[:,-1].copy()
         k0=k0.reshape((2*M+2,1))
@@ -217,12 +225,10 @@ def RKC(fun1,t0,t_end,h,u0,s):
         xx4=xx[3]
         #print("ceeor",-xx1/6+b4*xx2+a4[0]*xx4-1/6)
         
-        if counter<2:
+        if counter<1:
             yc=k3.copy()
            # print(yc)
-            err2=err(y[:,-1],yc,tc[-1],h1)
-            err1=np.linalg.norm(err2)/math.sqrt(2*M+2)
-            print(err1)
+           
            # fac=0.8*((1/err1)**(1/3))
             y = np.column_stack((y, yc))
             yb0=k3.copy()
@@ -246,9 +252,9 @@ def RKC(fun1,t0,t_end,h,u0,s):
             #yc=bf1*k02+b0*k0+bn*yb
             yc=xx1*k02+xx2*yb0+xx3*k0+xx4*yb
             yb0=k3.copy()
-            err2=err(y[:,-1],yc,tc[-1],h1)
-            err1=np.linalg.norm(err2)/math.sqrt(2*M+2)
-            print(err1)
+            #err2=err(y[:,-1],yc,tc[-1],h1)
+            #err1=np.linalg.norm(err2)/math.sqrt(2*M+2)
+            #print(err1)
             pu,fg1=ro(tc[-1]+h1,yc)
             tc.append(tc[-1]+h1)
             if tc[-1] + h1 > t_end:
@@ -290,4 +296,4 @@ plt.title(' t=2 af=0.1 beta=0.05  numberical solutions of RKC')
 plt.xlabel('x')
 plt.ylabel('y')
 plt.legend()
-plt.show()
+#plt.show()

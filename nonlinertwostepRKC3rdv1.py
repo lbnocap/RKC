@@ -6,6 +6,7 @@ import time
 import copy
 import math
 from sympy import symbols,Eq,solve,nsolve
+import h5py
 
 np.seterr(divide='ignore', invalid='ignore')
 M=200
@@ -15,12 +16,14 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.04
-bf=0.01
+bf=0.001
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))
 B=np.zeros((M+1,M+1)) 
 y=np.zeros((3*M+3,1))
-tol=1e-3    
+tol=1e-3 
+with h5py.File('eig3solution.h5', 'r') as hf:
+    solu = hf['solu'][:]   
 for i in range(0,M+1):
     if i==0:
         y[i]=0
@@ -274,6 +277,8 @@ def RKC(f,t0,t_end,h,u0,s):
                 h=0.25*(s**2)/pu
             if s_max<s:
                 s_max=s
+            if s<6:
+                s=6
             y = np.column_stack((y, yc))
     return np.array(tc),np.array(y),nfe,s_max
 t0=0
@@ -302,7 +307,9 @@ print("s_max:",s_max)
 err2=err(y[:,-3],y[:,-2],h)
 #print(y[:,3])
 err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
-print("err:",err1)
+print("err1:",err1)
+err=sum([(x - y) ** 2 for x, y in zip(y[1:M,-1], solu[1:M])] )/ len(solu[1:M])
+print("err:",np.sqrt(err))
 #plt.plot(x, y[:,-1],'red')
 #plt.plot(x, solu,'blue')
 #plt.title(' t=2 af=0.1 beta=0.05  numberical solutions of RKC')

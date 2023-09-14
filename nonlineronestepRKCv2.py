@@ -5,6 +5,7 @@ from numpy.polynomial import chebyshev
 import time
 import copy
 import math
+import h5py
 
 np.seterr(divide='ignore', invalid='ignore')
 M=200
@@ -14,7 +15,7 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.04
-bf=0.01
+bf=0.001
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))
 B=np.zeros((M+1,M+1)) 
@@ -125,6 +126,7 @@ def RKC(f,t0,t_end,h,u0,s):
     fg1=0
     nfe=0
     s_max=0
+    lop=0
     while tc[-1]<t_end:
         nfe=s+nfe+fg1+3
         cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
@@ -216,6 +218,8 @@ def RKC(f,t0,t_end,h,u0,s):
             tc.append(tc[-1]+h1)
            
             pu,fg1=ro(tc[-1]+h1,yc)
+            if pu>lop:
+                lop=pu
             s2=math.sqrt(h1*pu/0.4)
             s=math.ceil(s2)
             if s_max<s:
@@ -239,6 +243,8 @@ def RKC(f,t0,t_end,h,u0,s):
     
             s2=np.sqrt(h1*pu/0.4)                                           
             s=math.ceil(s2)
+            if pu>lop:
+                lop=pu
             if s<3:
                 s=3
             if s>s_max:
@@ -247,10 +253,10 @@ def RKC(f,t0,t_end,h,u0,s):
             #h=h1
             y = np.column_stack((y, yc))
 
-    return np.array(tc),np.array(y),nfe,s_max
+    return np.array(tc),np.array(y),nfe,s_max,lop
 t0=0
 t_end=1.1
-h=0.01
+h=0.001
 eig3,fg1=ro(0,y)
 s2=np.sqrt(h*eig3/0.4)                                           
 s=int(s2)
@@ -261,7 +267,7 @@ print('eig:',eig3)
 #print(y)
 if s<=3:
     s=3
-tc,y,nfe,s_max=RKC(fun1,t0,t_end,h,y,s)
+tc,y,nfe,s_max,lop=RKC(fun1,t0,t_end,h,y,s)
 
 #mse = np.mean((np.array(y[1:M,-1]) - np.array(solu[1:M]))**2)
 #mae = np.mean(np.abs(np.array(y[1:M,-1]) - np.array(solu[1:M])
@@ -269,6 +275,7 @@ tc,y,nfe,s_max=RKC(fun1,t0,t_end,h,y,s)
 #err=sum([(x - y) ** 2 for x, y in zip(y[1:M,-1], solu[1:M])] )/ len(solu[1:M])
 #rint(np.sqrt(err))
 time_end=time.time()
+print("lop:",lop)
 print(time_end-time_st)
 print(tc)
 print("步数：",len(tc))
@@ -278,6 +285,12 @@ err2=err(y[:,-3],y[:,-2],h)
 #print(y[:,3])
 err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
 print("err:",err1)
+with h5py.File('eig3solution.h5', 'r') as hf:
+    solu = hf['solu1'][:]
+    
+err=sum([(x - y) ** 2 for x, y in zip(y[1:M,-1], solu[1:M])] )/ len(solu[1:M])
+print("err:",np.sqrt(err))
+
 #plt.plot(x, y[:,-1],'red')
 #plt.plot(x, solu,'blue')
 #plt.title(' t=2 af=0.1 beta=0.05  numberical solutions of RKC')

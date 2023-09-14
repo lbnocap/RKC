@@ -5,7 +5,7 @@ import numpy as np
 from sympy import *
 #一阶RKC系数
 
-def  RKcoefficient2(e1=0.15,s=10):
+def  RKcoefficient2(e1,s,www):
     s1=np.ceil(s/3)
     s1=int(s1)
     s2=2*s1
@@ -30,7 +30,7 @@ def  RKcoefficient2(e1=0.15,s=10):
     k=np.zeros(s+1)
     e=np.ones(s+1)
 
-    w0=1+(0.05/((s)**2))
+    w0=1+(www/((s)**2))
     x[0],x[1]=0,0 
     k[0],k[1]=0,0
     c[0]=0

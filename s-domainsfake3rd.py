@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import time
 
 # 假设s为切比雪夫多项式的阶数
-s =20
+s =30
 # 创建s阶切比雪夫多项式对象
 cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
 cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
@@ -14,7 +14,7 @@ t5=cheb_poly.deriv(3)
 t42=chebyshev.Chebyshev([0] * (2 + 1))
 t42.coef[-1]=1
 t22=t42.deriv(2) 
-w0=1+(0.01)/((s)**2)
+w0=1+(4/((s)**2))
 c=np.zeros(s+1)
 b=np.zeros(s+1)
 t=np.zeros(s+1) 
@@ -22,9 +22,8 @@ A=np.zeros((s+1,s+1))
 t1=np.zeros(s+1)
 x=np.zeros(s+1)   
 e=np.ones((s+1,1))
-w1=t3(w0)/t4(w0)
-print(w1)
-#w1=(1+w0)/(0.65*(s**2))
+#w1=t3(w0)/t4(w0)
+w1=(1+w0)/(0.45*(s**2))
 #w1=1/(0.22* s**2)
 x[0],x[1]=0,0 
 c[0]=0  
@@ -119,7 +118,7 @@ result31=(values31-np.sqrt((values31)**2+4*values3))/2
 mask1 = np.abs(result3) <= 1
 mask = np.abs(result31) <=1
 overlap_mask = mask1 & mask
-plt.imshow(overlap_mask,extent=[-1.3*(1+w0)/w1,0,-2*s,2*s] ,origin='lower', cmap='Blues', alpha=1)
+plt.imshow(overlap_mask,extent=[-1.3*(1+w0)/w1,0,-2*s,2*s] ,origin='lower', cmap='Blues', alpha=1,aspect='auto')
 plt.xlabel('Re(z)')
 plt.ylabel('Im(z)')
 plt.title('Contour Plot of Complex Function (|root| = 1)')

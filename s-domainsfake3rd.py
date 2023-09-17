@@ -3,8 +3,8 @@ from numpy.polynomial import chebyshev
 import matplotlib.pyplot as plt
 import time
 
-# 假设s为切比雪夫多项式的阶数
-s =30
+# 假设s为切比雪夫多项式阶数
+s =10
 # 创建s阶切比雪夫多项式对象
 cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
 cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
@@ -85,7 +85,7 @@ xx1=xx[0]
 xx2=xx[1]
 xx3=xx[2]
 xx4=xx[3]
-print(xx)
+print(A)
 print("ceeor",np.abs(-xx1/6+b4*xx2+a4[0]*xx4)-1/6)
 bb=cheb_poly(w0)
 bs=t4(w0)/(t3(w0)**2)

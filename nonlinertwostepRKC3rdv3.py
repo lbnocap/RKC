@@ -14,7 +14,7 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.04
-bf=0.001
+bf=0.005
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))      
 B=np.zeros((M+1,M+1)) 
@@ -302,7 +302,7 @@ if s<=3:
     s=3
 tc,y,nfe,s_max=RKC(fun1,t0,t_end,h,y,s)
 with h5py.File('eig3solution.h5', 'r') as hf:
-    solu = hf['solu'][:]
+    solu = hf['solu']
 err=sum([(x - y) ** 2 for x, y in zip(y[1:M,-1], solu[1:M])] )/ len(solu[1:M])
 print("err:",np.sqrt(err))
 print("nfe:",nfe)

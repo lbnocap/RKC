@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import h5py
 
 # 定义复数函数
 def complex_function(z):
@@ -52,3 +53,31 @@ print(solu)
 err1=0.02932012
 err2=0.00010726
 print(np.log2(err2/err1))
+array_of_matrices = np.empty((50, 1), dtype=object)
+array_of_matrices[0,0]=np.array([0,1,2,3,4,55,26,12])
+print(array_of_matrices)
+
+
+
+# 创建一个示例的多维数组，其中每个元素都是一个不同大小的一维数组
+data = []
+max_length = 202  # 设置一维数组的最大长度
+
+for N in range(1, max_length):
+    # 创建一维数组，长度为 max_length，并将其中的数据存储在适当的位置
+    arr = np.zeros((max_length, 1))
+    arr[:N, 0] = np.random.rand(N, 1).flatten()
+    data.append(arr)
+
+# 将多维数组保存到HDF5文件
+with h5py.File('example.h5', 'w') as hf:
+    # 创建一个数据集，将多维数组存储在其中
+    dataset = hf.create_dataset('my_data', data=np.array(data))
+
+# 从HDF5文件中读取多维数组
+with h5py.File('example.h5', 'r') as hf:
+    loaded_data = hf['my_data'][:]
+    
+# 确认数据已成功加载
+for i, item in enumerate(loaded_data):
+    print(f"Element {i + 1}: {item.shape}")

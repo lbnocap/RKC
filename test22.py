@@ -68,7 +68,7 @@ for N in range(1, max_length):
     arr = np.zeros((max_length, 1))
     arr[:N, 0] = np.random.rand(N, 1).flatten()
     data.append(arr)
-
+'''
 # 将多维数组保存到HDF5文件
 with h5py.File('example.h5', 'w') as hf:
     # 创建一个数据集，将多维数组存储在其中
@@ -81,3 +81,10 @@ with h5py.File('example.h5', 'r') as hf:
 # 确认数据已成功加载
 for i, item in enumerate(loaded_data):
     print(f"Element {i + 1}: {item.shape}")
+'''
+
+widetwoRKCv2= np.load('widetwostepRKCv2.npz', allow_pickle=True)
+
+twoRKCv1= np.load('twostepRKCv1.npz', allow_pickle=True)
+cs = twoRKCv1['cs']
+print(cs[15,0])

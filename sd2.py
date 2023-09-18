@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import time
 
 # 假设s为切比雪夫多项式的阶数
-s =20
+s =15
 # 创建s阶切比雪夫多项式对象
 cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
 cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
@@ -66,7 +66,7 @@ for j in range(2,s+1):
             A[j,0]=A[j,0]+v1[j]
 def complex_function(z):
     return cheb_poly(z)/cheb_poly(w0)
-print(b[s]*x[s])
+print("c:",c)
 bb=cheb_poly(w0)
 bs=t4(w0)/(t3(w0)**2)
 r=1
@@ -74,16 +74,15 @@ cc=t3(w0)*t5(w0)/(t4(w0)**2)
 #yt=((r**3+bf1)/(cc*bn*(r**3)))**(1/3)
 #yt=0.6
 yt=1/np.sqrt(cc)
-
 bn=(1+r)/(yt*(1+yt*r))
 bf1=(r**2)*(1-yt)/(1+yt*r)
 b0=1-bf1-bn
 C=1/6+bf1/6-bn*(yt**3)*cc/6
 
-x = np.linspace(-100, 0, 1000)
-y = np.linspace(-30, 30, 1000)
+x = np.linspace(-1.3*(1+w0)/w1, 0, 3000)
+y = np.linspace(-2*s, 2*s, 1000)
 X, Y = np.meshgrid(x, y)                                            
-Z =w0+w1*( X + 1j*Y)
+Z =w0+w1*yt*( X + 1j*Y)
 values = 1-bs*bb+bs*cheb_poly(Z)
 result=(b0+bn*(values)-np.sqrt((b0+bn *(values))**2+4*bf1))/2 
 result1=(b0+bn*(values)+np.sqrt((b0+bn *(values))**2+4*bf1))/2
@@ -94,12 +93,11 @@ plt.figure(figsize=(8, 6))
 mask1 = np.abs(result1) <= 1
 mask = np.abs(result) <=1
 overlap_mask = mask1 & mask
-plt.imshow(overlap_mask,extent=[-100,0,-30,30] ,origin='lower', cmap='Blues', alpha=1)
+plt.imshow(overlap_mask,extent=[-1.3*(1+w0)/w1,0,-2*s,2*s] ,origin='lower', cmap='Blues', alpha=1)
 plt.xlabel('Re(z)')
 plt.ylabel('Im(z)')
 plt.title('Contour Plot of Complex Function (|root| = 1)')
 plt.show()
-
 c1=np.dot(b,e)
 a=A[s,:].copy()
 a1=np.dot(a,e)

@@ -23,7 +23,7 @@ for i in range(0,5):
   xxs[i,0]=1
        
 
-for s in range(5,52):
+for s in range(5,251):
 # 创建s阶切比雪夫多项式对象
    cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
    cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
@@ -33,7 +33,7 @@ for s in range(5,52):
    t42=chebyshev.Chebyshev([0] * (2 + 1))
    t42.coef[-1]=1
    t22=t42.deriv(2) 
-   w0=1+(4/((s)**2))
+   w0=1+(0.05/((s)**2))
    c=np.zeros(s+1)
    b=np.zeros(s+1)
    t=np.zeros(s+1) 
@@ -42,7 +42,7 @@ for s in range(5,52):
    x=np.zeros(s+1)   
    e=np.ones((s+1,1))
    #w1=t3(w0)/t4(w0)
-   w1=(1+w0)/(0.45*(s**2))
+   w1=(1+w0)/(0.63*(s**2))
    #w1=1/(0.22* s**2)
    x[0],x[1]=0,0 
    c[0]=0  
@@ -109,7 +109,11 @@ for s in range(5,52):
    bs[s,0]=b
    As[s,0]=A
    xxs[s,0]=xx
-print(us1.dtype)
+
+np.savez('longtwostepRKCv2.npz', us1=us1, vs1=vs1,vs=vs,us=us,bs=bs,As=As,xxs=xxs,cs=cs)
+
+
+
 
 '''
 with h5py.File('widetwostepRKCv2153.h5', 'a') as hf:

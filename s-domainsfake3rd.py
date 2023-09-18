@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import time
 
 # 假设s为切比雪夫多项式阶数
-s =10
+s =5
 # 创建s阶切比雪夫多项式对象
 cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
 cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
@@ -14,7 +14,7 @@ t5=cheb_poly.deriv(3)
 t42=chebyshev.Chebyshev([0] * (2 + 1))
 t42.coef[-1]=1
 t22=t42.deriv(2) 
-w0=1+(4/((s)**2))
+w0=1+(0.05/((s)**2))
 c=np.zeros(s+1)
 b=np.zeros(s+1)
 t=np.zeros(s+1) 
@@ -23,7 +23,7 @@ t1=np.zeros(s+1)
 x=np.zeros(s+1)   
 e=np.ones((s+1,1))
 #w1=t3(w0)/t4(w0)
-w1=(1+w0)/(0.45*(s**2))
+w1=(1+w0)/(0.63*(s**2))
 #w1=1/(0.22* s**2)
 x[0],x[1]=0,0 
 c[0]=0  
@@ -85,7 +85,7 @@ xx1=xx[0]
 xx2=xx[1]
 xx3=xx[2]
 xx4=xx[3]
-print(A)
+print(c)
 print("ceeor",np.abs(-xx1/6+b4*xx2+a4[0]*xx4)-1/6)
 bb=cheb_poly(w0)
 bs=t4(w0)/(t3(w0)**2)

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import time
 
 # 假设s为切比雪夫多项式的阶数
-s =15
+s =10
 # 创建s阶切比雪夫多项式对象
 cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
 cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式

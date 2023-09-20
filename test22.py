@@ -37,13 +37,21 @@ stacked_matrix = np.vstack((vector1, vector2, vector3))
 #print(0.035*0.7*1.3/(0.7*1.3+0.1)-2*np.sin(2*np.pi*0.01)*((-2*np.cos(2*np.pi*0.01))**2))
 
 r=0.8*((1/0.4628)**(1/3))
-solu=np.zeros((2*500+2,1))
+solu=np.zeros((1002,1))
+solu1=np.zeros((3003,1))
+
 x=np.linspace(0,1,500+1,dtype=float)
+x1=np.linspace(0,1,1000+1,dtype=float)
 for i in range(0,500+1):
      solu[500+1+i]=np.exp(-((pi)**2) *bt*0.01)*np.cos(pi*(x[i]-0.01))
      solu[i]=np.exp(-((pi)**2) *bt*0.01)*np.sin(pi*(x[i]-0.01))
-print(solu)
 
+for i in range(0,1001):
+        solu1[i]=np.exp(0.0002)*np.sin(pi*x1[i])
+        solu1[1001+i]=0
+        solu1[2002+i]=1-np.exp(0.0002)*np.sin(pi*x1[i])
+
+print(solu1)
 
 #[2.76551848] [1.40166833] [0.28742099] [0.81988987] 2.0247827947216464 -0.9615580646630746 0.10579341717210078 0.7415737131783371
 #[2.76551848] [1.40166833] [0.28742099] [0.81988987] 1.7655184769831167 -0.863850142301906 0.10184522681723429 0.6343141062448767
@@ -55,7 +63,7 @@ err2=0.00010726
 print(np.log2(err2/err1))
 array_of_matrices = np.empty((50, 1), dtype=object)
 array_of_matrices[0,0]=np.array([0,1,2,3,4,55,26,12])
-print(array_of_matrices)
+
 
 
 
@@ -86,5 +94,10 @@ for i, item in enumerate(loaded_data):
 widetwoRKCv2= np.load('widetwostepRKCv2.npz', allow_pickle=True)
 
 twoRKCv1= np.load('twostepRKCv1.npz', allow_pickle=True)
-cs = twoRKCv1['cs']
-print(cs[15,0])
+
+
+RKC2=np.load('RKC2.npz', allow_pickle=True)
+cs=RKC2['cs']
+
+
+a=(26/(25* pi**2))*(-5*np.sin(pi*0.001)+4*np.sin(pi*0.002)-np.sin(pi*0.003))/(0.001**2)

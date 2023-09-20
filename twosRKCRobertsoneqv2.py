@@ -14,7 +14,6 @@ x0=0
 x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
-print(hx)
 bt=1/(25* pi**2)
 af=26/(25* pi**2)
 gm=1/pi**2
@@ -37,11 +36,11 @@ for i in range(0,M+1):
         solu[2*M+2+i]=1-np.exp(-1)*np.sin(pi*x[i])
         e[0]=0
         B[0][0],B[0][1]=2*bt/(hx**2),-5*bt/(hx**2)
-       # B[0][2],B[0][3]=4*bt/(hx**2),-bt/(hx**2)
+        B[0][2],B[0][3]=4*bt/(hx**2),-bt/(hx**2)
         A[0][0],A[0][1]=2*af/(hx**2),-5*af/(hx**2)
-       # A[0][2],A[0][3]=4*af/(hx**2),-af/(hx**2)
+        A[0][2],A[0][3]=4*af/(hx**2),-af/(hx**2)
         C[0][0],C[0][1]=2*gm/(hx**2),-5*gm/(hx**2)
-       # C[0][2],C[0][3]=4*gm/(hx**2),-gm/(hx**2)
+        C[0][2],C[0][3]=4*gm/(hx**2),-gm/(hx**2)
     elif 0<i<M:
         y[i]=np.sin(pi*x[i])
         y[M+1+i]=0
@@ -86,7 +85,7 @@ def fun1(x,z):
     U=np.dot(BB,z).reshape((3*M+3,1))
     return U+b
 
-print(y)
+
 def err(x,y,tc,h):
     x1=x.reshape((2*M+2,1))
     y1=y.reshape((2*M+2,1))
@@ -122,33 +121,30 @@ def ro(x,y):
         R=1.2*R
     return R,fg1
 
-widetwoRKCv2= np.load('widetwostepRKCv2.npz', allow_pickle=True)
-cs = widetwoRKCv2['cs']
-us1=widetwoRKCv2['us1']
-vs1=widetwoRKCv2['vs1']
-vs=widetwoRKCv2['vs']
-us=widetwoRKCv2['us']
-bs=widetwoRKCv2['bs']
-xxs=widetwoRKCv2['xxs']
+RKCv2= np.load('twostepRKCv1.npz', allow_pickle=True)
+cs = RKCv2['cs']
+us1=RKCv2['us1']
+vs1=RKCv2['vs1']
+vs=RKCv2['vs']
+us=RKCv2['us']
+yts=RKCv2['yts']
 
 
 def RKC(fun1,t0,t_end,h,u0,s): 
-    
+    h1=h
     tc=[t0] #t的初始
     y=u0
     counter=0
     fg1=0
     nfe=0
     s_max=0
-    h1=h
-    yb0=np.zeros((2*M+2,1))
     while tc[-1]<t_end:
         c=cs[s,0]
         u1=us1[s,0]
         u=us[s,0]
         v1=vs1[s,0]
         v=vs[s,0]
-        xx=xxs[s,0]
+        yt=yts[s,0]
         nfe=s+nfe+fg1+3
         k0=np.zeros((3*M+3,1))
         k1=np.zeros((3*M+3,1))
@@ -161,75 +157,74 @@ def RKC(fun1,t0,t_end,h,u0,s):
         ky0=fun1(tc[-1],k0)
         k1=k0+u1[1] *h *ky0
         ky1=fun1(tc[-1]+u1[1]*h,k1)
+    
         k2=k1.copy()
         k1=k0.copy()
-        print(s,u,v,u1,v1)
         for j in range(2,s+1):
+
             k3=u[j]*k2+v[j]*k1+(1-u[j]-v[j])*k0+u1[j]*h*ky1+v1[j]*h*ky0
             #if j==4:
                 #print(k[4])
             ky1=fun1(tc[-1]+c[j]*h,k3)
             k1=k2.copy()
-        xx1=xx[0]
-        xx2=xx[1]
-        xx3=xx[2]
-        xx4=xx[3]
-            
+            k2=k3.copy()
+        r=1
+        bn=(1+r)/(yt*(1+r*yt))
+        bf1=(r**2)*(1-yt)/(1+yt*r)
+        b0=1-bn-bf1
+        
         if counter==0:
             yc=k3.copy()
-           
-            print(yc)
-          
-
-            #err2=err(y[:,-1],yc,h1)
-            #err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
-            yb0=k3.copy()
-           # print(yb0)
+            # print(yc)
+            #err2=err(y[:,-1],yc,tc[-1],h1)
+            #err1=np.linalg.norm(err2)/math.sqrt(2*M+2)
+            #print(err1)
+            # fac=0.8*((1/err1)**(1/3))
             y = np.column_stack((y, yc))
-            counter=0
+            counter+=1
+            if tc[-1]==0:
+                print(yc)
             tc.append(tc[-1]+h1)
             pu,fg1=ro(tc[-1]+h1,yc)
             s2=math.sqrt(h1*pu/0.4)
             s=math.ceil(s2)
             if s_max<s:
                    s_max=s
+            if s<3:
+                    s=3
             if s>250:
                 s=250
+            h=yt*h1
+         
+            
 
-            if s<5:
-                s=5  
+
+           
         else :
             k02=y[:,-2].copy()
             k02=k02.reshape((3*M+3,1))
-            yb=k3.copy()    
-            yc=xx1*k02+xx2*yb0+xx3*k0+xx4*yb
-            yb0=yb.copy()
-            if tc[-1]==0.001:
-               1# print(yc,yb)
+            yb=k3.copy()
+            yc=bf1*k02+b0*k0+bn*yb
             pu,fg1=ro(tc[-1]+h1,yc)
             tc.append(tc[-1]+h1)
             if tc[-1] + h1 > t_end:
                  h1 = t_end -tc[-1]
-                 h=h1  
+                 h=yt*h1
             s2=np.sqrt(h1*pu/0.4)                                           
             s=math.ceil(s2)
-            if s<6:
-                s=5
+            if s<3:
+                s=3
             if s>s_max:
-                s_max=s 
-            if s>250:
-                s=250
+                s_max=s
+            if s>200:
+                s=200  
             #h=h1
-            #err2=err(y[:,-1],yc,h1)
-            #err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
-            #print(err1)
             y = np.column_stack((y, yc))
+
     return np.array(tc),np.array(y),nfe,s_max
-
-
 t0=0
 t_end=1
-h=0.0001
+h=0.001
 eig3,fg1=ro(0,y)
 s2=np.sqrt(h*eig3/0.4)                                           
 s=int(s2)

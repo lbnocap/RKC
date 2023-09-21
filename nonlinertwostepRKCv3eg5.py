@@ -286,7 +286,6 @@ print('eig2:',eig2)
 s2=np.sqrt(h*eig3/0.5)                                           
 s=int(s2)
 f=fun1(0,y)
-#print(y)
 if s<=3:
     s=3
 tc,y,nfe,s_max=RKC(fun1,t0,t_end,h,y,s)

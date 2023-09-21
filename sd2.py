@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import time
 
 # 假设s为切比雪夫多项式的阶数
-s =10
+s =33
 # 创建s阶切比雪夫多项式对象
 cheb_poly = chebyshev.Chebyshev([0] * (s + 1))
 cheb_poly.coef[-1] = 1  # 将最高阶系数设为1，得到s阶切比雪夫多项式
@@ -48,6 +48,7 @@ c[1]=u1[1]
 v[1]=-b[1]/b[0]
 v1[1]=-(1-b[0]*t[0])*u1[1]
 A[1,0]=u1[1]
+
 for j in range(2,s+1):
             cheb_poly1 = chebyshev.Chebyshev([0] * (j + 1))
             cheb_poly1.coef[-1] = 1
@@ -66,7 +67,7 @@ for j in range(2,s+1):
             A[j,0]=A[j,0]+v1[j]
 def complex_function(z):
     return cheb_poly(z)/cheb_poly(w0)
-print("c:",c)
+print("c:",u[10],v1[10])
 bb=cheb_poly(w0)
 bs=t4(w0)/(t3(w0)**2)
 r=1

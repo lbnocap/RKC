@@ -127,7 +127,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
     nfe=0
     s_max=0
     h1=h
-    yb0=np.zeros((2*M+2,1))
+    yb0=np.zeros((3*M+3,1))
     while tc[-1]<t_end:
         nfe=s+nfe+fg1+3
         cheb_poly = chebyshev.Chebyshev([0] * (s + 1))

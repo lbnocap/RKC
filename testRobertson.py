@@ -15,7 +15,7 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=1/(25* pi**2)
-af=26/(25* pi**2)
+af=26/(25* (pi**2))
 gm=1/pi**2
 e=np.zeros((M+1,1))
 BB=np.zeros((3*M+3,3*M+3))
@@ -35,10 +35,10 @@ for i in range(0,M+1):
         solu[M+1+i]=0
         solu[2*M+2+i]=1-np.exp(-1)*np.sin(pi*x[i])
         e[0]=0
-        B[0][0],B[0][1]=2*bt/(hx**2),-5*bt/(hx**2)
-        B[0][2],B[0][3]=4*bt/(hx**2),-bt/(hx**2)
-        A[0][0],A[0][1]=2*af/(hx**2),-5*af/(hx**2)
-        A[0][2],A[0][3]=4*af/(hx**2),-af/(hx**2)
+        B[0][0],B[0][1]=-2*bt/(hx**2),bt/(hx**2)
+        B[0][M-1]=-bt/(hx**2)
+        A[0][0],A[0][1]=-2*af/(hx**2),af/(hx**2)
+        A[0][M-1]=-af/(hx**2)
         C[0][0],C[0][1]=2*gm/(hx**2),-5*gm/(hx**2)
         C[0][2],C[0][3]=4*gm/(hx**2),-gm/(hx**2)
     elif 0<i<M:
@@ -60,16 +60,16 @@ for i in range(0,M+1):
         solu[M+1+i]=0
         solu[2*M+2+i]=1-np.exp(-1)*np.sin(pi*x[i])
         e[i]=0 
-        B[M][M],B[M][M-1]=2*bt/(hx**2),-5*bt/(hx**2)
-        B[M][M-2],B[M][M-3]=4*bt/(hx**2),-bt/(hx**2)
-        A[M][M],A[M][M-1]=2*af/(hx**2),-5*af/(hx**2)
-        A[M][M-2],A[M][M-3]=4*af/(hx**2),-af/(hx**2)
+        B[M][M],B[M][M-1]=-2*bt/(hx**2),bt/(hx**2)
+        B[M][1]=-bt/(hx**2)
+        A[M][M],A[M][M-1]=-2*af/(hx**2),af/(hx**2)
+        A[M][1]=-af/(hx**2)
         C[M][M],C[M][M-1]=2*gm/(hx**2),-5*gm/(hx**2)
         C[M][M-2],C[M][M-3]=4*gm/(hx**2),-gm/(hx**2)
 
-BB[0:M+1,0:M+1],BB[M+1:2*M+2,M+1:2*M+2]=A-0.04*np.eye(M+1),B
+BB[0:M+1,0:M+1],BB[M+1:2*M+2,M+1:2*M+2]=A,B
 BB[2*M+2:3*M+3,2*M+2:3*M+3]=C
-BB[M+1:2*M+2,0:M+1]=-0.04*np.eye(M+1)
+
 
 def fun1(x,z):
     b=np.zeros((3*M+3,1))
@@ -78,12 +78,14 @@ def fun1(x,z):
     w=z[2*M+2:3*M+3]
     
     for j in range(0,M+1):
-        b[j]=(10**4)*v[j]*w[j]
-        b[M+1+j]=-3*(10**7)*(v[j]**2)-(10**4)*v[j]*w[j]
+        b[j]=(10**4)*v[j]*w[j]-0.04*u[j]
+        b[M+1+j]=-3*(10**7)*(v[j]**2)-(10**4)*v[j]*w[j]+0.04*u[j]
         b[2*M+2+j]=3*(10**7)*(v[j]**2)
     b=b.reshape((3*M+3,1))
     U=np.dot(BB,z).reshape((3*M+3,1))
     return U+b
+
+
 
 def err(x,y,tc,h):
     x1=x.reshape((3*M+3,1))
@@ -91,10 +93,8 @@ def err(x,y,tc,h):
     z1=12*(x1-y1)
     return 0.1*(z1+6*h*(fun1(tc+h,x1)+fun1(tc+h,y1)))
 
-
-
 def ro(x,y):
-    e=1e-8;ln=len(y)
+    e=1e-12;ln=len(y)
     Rv=y.copy()
     for j in range(ln):
         if y[j]==0:
@@ -103,7 +103,7 @@ def ro(x,y):
             Rv[j]=y[j]*(1+e/2)
     e=max(e,e*np.linalg.norm(Rv,ord=2))
     Rv1=y.copy()
-    f1=fun1(x,Rv1)
+    f1=fun1(x,Rv1) 
     f2=fun1(x,Rv)
     Rv1=Rv+e*(f1-f2)/(np.linalg.norm(f1-f2))
     Rv1=Rv1.reshape((ln,1))
@@ -111,15 +111,15 @@ def ro(x,y):
     R=np.linalg.norm(f1-f2)/e
     Rr=R
     fg=R;fg1=0
-    while fg > 1e-3*R and fg1<20:
+    while fg > 1e-4*R and fg1<30:
         Rv1=Rv+e*(f1-f2)/np.linalg.norm(f1-f2)
         f1=fun1(x,Rv1)
         R=np.linalg.norm(f1-f2)/e
         fg=np.abs(R-Rr)
         fg1+=1
         Rr=R 
-    if fg1==20:
-        R=1.2*R
+    if fg1==30:
+        R=1.1*R
     return R,fg1
 
 
@@ -196,9 +196,9 @@ def RKC(f,t0,t_end,h,u0,s):
             c[j]=u[j]*c[j-1]+v[j]*c[j-2]+u1[j]
             v1[j]=-(1-b[j-1]*t[j-1])*u1[j]
             k3=u[j]*k2+v[j]*k1+(1-u[j]-v[j])*k0+u1[j]*h*ky1+v1[j]*h*ky0
-            #if j==4:
-                #print(k[4])
             ky1=fun1(tc[-1]+c[j]*h,k3)
+            if j==10:
+                print(u[j],v1[j])
             k1=k2.copy()
             k2=k3.copy()
        
@@ -216,14 +216,14 @@ def RKC(f,t0,t_end,h,u0,s):
         
         if counter==0:
             yc=k3.copy()
-           # print(yc)
-            err2=err(y[:,-1],yc,tc[-1],h1)
-            err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
-            print(yc)
-            fac=0.8*((1/err1)**(1/3))
+            #print(yc)
+            #err2=err(y[:,-1],yc,tc[-1],h1)
+            #err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
+            #print(yc)
+            #fac=0.8*((1/err1)**(1/3))
             y = np.column_stack((y, yc))
-            counter=0
-            tc.append(tc[-1]+h1)
+            counter=1
+            tc.append(tc[-1]+h1) 
            
             pu,fg1=ro(tc[-1]+h1,yc)
             if pu>lop:
@@ -263,8 +263,8 @@ def RKC(f,t0,t_end,h,u0,s):
 
     return np.array(tc),np.array(y),nfe,s_max,lop
 t0=0
-t_end=1.1
-h=0.001
+t_end=1
+h=0.01
 eig3,fg1=ro(0,y)
 s2=np.sqrt(h*eig3/0.4)                                           
 s=int(s2)
@@ -287,14 +287,15 @@ print(tc)
 print("步数：",len(tc))
 print("评估次数：",nfe)
 print("s_max:",s_max)
-err2=err(y[:,-3],y[:,-2],h)
-#print(y[:,3])
+err2=err(y[:,-3],y[:,-2],tc[-3],h)
+print(y[:,-1])
+print(solu)
 err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
 print("err:",err1)
 with h5py.File('eig3solution.h5', 'r') as hf:
     solu = hf['solu1'][:]
     
-err=sum([(x - y) ** 2 for x, y in zip(y[1:M,-1], solu[1:M])] )/ len(solu[1:M])
+err=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+3,-1], solu[1:3*M+3])] )/ len(solu[1:3*M+3])
 print("err:",np.sqrt(err))
 
 #plt.plot(x, y[:,-1],'red')

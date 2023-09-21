@@ -47,9 +47,9 @@ for i in range(0,500+1):
      solu[i]=np.exp(-((pi)**2) *bt*0.01)*np.sin(pi*(x[i]-0.01))
 
 for i in range(0,1001):
-        solu1[i]=np.exp(0.0002)*np.sin(pi*x1[i])
+        solu1[i]=np.exp(-1)*np.sin(pi*x1[i])
         solu1[1001+i]=0
-        solu1[2002+i]=1-np.exp(0.0002)*np.sin(pi*x1[i])
+        solu1[2002+i]=1-np.exp(-1)*np.sin(pi*x1[i])
 
 print(solu1)
 
@@ -100,4 +100,5 @@ RKC2=np.load('RKC2.npz', allow_pickle=True)
 cs=RKC2['cs']
 
 
-a=(26/(25* pi**2))*(-5*np.sin(pi*0.001)+4*np.sin(pi*0.002)-np.sin(pi*0.003))/(0.001**2)
+a=(26/(25* pi**2))*(-np.sin(pi*(1-0.0001))-2*np.sin(pi*0)+np.sin(pi*0.0001))/(0.001**2)
+

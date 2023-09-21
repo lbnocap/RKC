@@ -8,13 +8,12 @@ import math
 
 np.seterr(divide='ignore', invalid='ignore')
 pi=math.pi
-M=1000
+M=400
 time_st=time.time()
 x0=0
 x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
-hx=x[1]-x[0]
-print(hx)
+hx=x[1]-x[0] 
 bt=1/(25* pi**2)
 af=26/(25* pi**2)
 gm=1/pi**2
@@ -36,12 +35,12 @@ for i in range(0,M+1):
         solu[M+1+i]=0
         solu[2*M+2+i]=1-np.exp(-1)*np.sin(pi*x[i])
         e[0]=0
-        B[0][0],B[0][1]=2*bt/(hx**2),-5*bt/(hx**2)
-       # B[0][2],B[0][3]=4*bt/(hx**2),-bt/(hx**2)
-        A[0][0],A[0][1]=2*af/(hx**2),-5*af/(hx**2)
-       # A[0][2],A[0][3]=4*af/(hx**2),-af/(hx**2)
+        B[0][0],B[0][1]=-2*bt/(hx**2),bt/(hx**2)
+        B[0][M-1]=-bt/(hx**2)
+        A[0][0],A[0][1]=-2*af/(hx**2),af/(hx**2)
+        A[0][M-1]=-af/(hx**2)
         C[0][0],C[0][1]=2*gm/(hx**2),-5*gm/(hx**2)
-       # C[0][2],C[0][3]=4*gm/(hx**2),-gm/(hx**2)
+        C[0][2],C[0][3]=4*gm/(hx**2),-gm/(hx**2)
     elif 0<i<M:
         y[i]=np.sin(pi*x[i])
         y[M+1+i]=0
@@ -61,16 +60,16 @@ for i in range(0,M+1):
         solu[M+1+i]=0
         solu[2*M+2+i]=1-np.exp(-1)*np.sin(pi*x[i])
         e[i]=0 
-        B[M][M],B[M][M-1]=2*bt/(hx**2),-5*bt/(hx**2)
-        B[M][M-2],B[M][M-3]=4*bt/(hx**2),-bt/(hx**2)
-        A[M][M],A[M][M-1]=2*af/(hx**2),-5*af/(hx**2)
-        A[M][M-2],A[M][M-3]=4*af/(hx**2),-af/(hx**2)
+        B[M][M],B[M][M-1]=-2*bt/(hx**2),bt/(hx**2)
+        B[M][1]=-bt/(hx**2)
+        A[M][M],A[M][M-1]=-2*af/(hx**2),af/(hx**2)
+        A[M][1]=-af/(hx**2)
         C[M][M],C[M][M-1]=2*gm/(hx**2),-5*gm/(hx**2)
         C[M][M-2],C[M][M-3]=4*gm/(hx**2),-gm/(hx**2)
 
-BB[0:M+1,0:M+1],BB[M+1:2*M+2,M+1:2*M+2]=A-0.04*np.eye(M+1),B
+BB[0:M+1,0:M+1],BB[M+1:2*M+2,M+1:2*M+2]=A,B
 BB[2*M+2:3*M+3,2*M+2:3*M+3]=C
-BB[M+1:2*M+2,0:M+1]=-0.04*np.eye(M+1)
+
 
 def fun1(x,z):
     b=np.zeros((3*M+3,1))
@@ -79,22 +78,23 @@ def fun1(x,z):
     w=z[2*M+2:3*M+3]
     
     for j in range(0,M+1):
-        b[j]=(10**4)*v[j]*w[j]
-        b[M+1+j]=-3*(10**7)*(v[j]**2)-(10**4)*v[j]*w[j]
+        b[j]=(10**4)*v[j]*w[j]-0.04*u[j]
+        b[M+1+j]=-3*(10**7)*(v[j]**2)-(10**4)*v[j]*w[j]+0.04*u[j]
         b[2*M+2+j]=3*(10**7)*(v[j]**2)
     b=b.reshape((3*M+3,1))
     U=np.dot(BB,z).reshape((3*M+3,1))
     return U+b
 
-print(y)
+
+
 def err(x,y,tc,h):
-    x1=x.reshape((2*M+2,1))
-    y1=y.reshape((2*M+2,1))
+    x1=x.reshape((3*M+3,1))
+    y1=y.reshape((3*M+3,1))
     z1=12*(x1-y1)
     return 0.1*(z1+6*h*(fun1(tc+h,x1)+fun1(tc+h,y1)))
 
 def ro(x,y):
-    e=1e-8;ln=len(y)
+    e=1e-12;ln=len(y)
     Rv=y.copy()
     for j in range(ln):
         if y[j]==0:
@@ -119,7 +119,7 @@ def ro(x,y):
         fg1+=1
         Rr=R 
     if fg1==30:
-        R=1.2*R
+        R=1.1*R
     return R,fg1
 
 widetwoRKCv2= np.load('widetwostepRKCv2.npz', allow_pickle=True)
@@ -163,13 +163,15 @@ def RKC(fun1,t0,t_end,h,u0,s):
         ky1=fun1(tc[-1]+u1[1]*h,k1)
         k2=k1.copy()
         k1=k0.copy()
-        print(s,u,v,u1,v1)
+        if tc[-1]==0:
+            print(1)
         for j in range(2,s+1):
             k3=u[j]*k2+v[j]*k1+(1-u[j]-v[j])*k0+u1[j]*h*ky1+v1[j]*h*ky0
-            #if j==4:
-                #print(k[4])
+            #if j==8:
+              #  print(k3)
             ky1=fun1(tc[-1]+c[j]*h,k3)
             k1=k2.copy()
+            k2=k3.copy()
         xx1=xx[0]
         xx2=xx[1]
         xx3=xx[2]
@@ -178,15 +180,15 @@ def RKC(fun1,t0,t_end,h,u0,s):
         if counter==0:
             yc=k3.copy()
            
-            print(yc)
+           # print("yc:",yc)
           
 
             #err2=err(y[:,-1],yc,h1)
             #err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
             yb0=k3.copy()
-           # print(yb0)
+           # print(yb0)y, yc))
             y = np.column_stack((y, yc))
-            counter=0
+            counter+=1
             tc.append(tc[-1]+h1)
             pu,fg1=ro(tc[-1]+h1,yc)
             s2=math.sqrt(h1*pu/0.4)
@@ -229,7 +231,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
 
 t0=0
 t_end=1
-h=0.0001
+h=0.001
 eig3,fg1=ro(0,y)
 s2=np.sqrt(h*eig3/0.4)                                           
 s=int(s2)
@@ -252,9 +254,9 @@ print(tc)
 print("步数：",len(tc))
 print("评估次数：",nfe)
 print("s_max:",s_max)
-#err2=err(y[:,-3],y[:,-2],0,h)
+err2=err(y[:,-3],y[:,-2],0,h)
 #print(y[:,3])
-#err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
-#print("err1:",err1)
+err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
+print("err1:",err1)
 err=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu[1:3*M+2])] )/ len(solu[1:3*M+2])
 print("err:",np.sqrt(err))

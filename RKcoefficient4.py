@@ -29,7 +29,7 @@ for s in range(2,251):
     t42=chebyshev.Chebyshev([0] * (2 + 1))
     t42.coef[-1]=1
     t22=t42.deriv(2) 
-    w0=1+(0.9/((s)**2))   
+    w0=1+((2/13)/((s)**2))   
     c=np.zeros(s+1)
     b=np.zeros(s+1)
     t=np.zeros(s+1) 

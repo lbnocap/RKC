@@ -127,6 +127,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
     nfe=0
     s_max=0
     h1=h
+    lop=0
     yb0=np.zeros((3*M+3,1))
     while tc[-1]<t_end:
         nfe=s+nfe+fg1+3
@@ -247,6 +248,8 @@ def RKC(fun1,t0,t_end,h,u0,s):
             counter+=1
             tc.append(tc[-1]+h1)
             pu,fg1=ro(tc[-1]+h1,yc)
+            if pu>lop:
+                lop=pu
             s2=math.sqrt(h1*pu/0.4)
             s=math.ceil(s2)
             if s_max<s:
@@ -264,6 +267,8 @@ def RKC(fun1,t0,t_end,h,u0,s):
             if tc[-1]==0.001:
                1# print(yc,yb)
             pu,fg1=ro(tc[-1]+h1,yc)
+            if pu>lop:
+                lop=pu
             tc.append(tc[-1]+h1)
             if tc[-1] + h1 > t_end:
                  h1 = t_end -tc[-1]
@@ -281,7 +286,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
             #err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
             #print(err1)
             y = np.column_stack((y, yc))
-    return np.array(tc),np.array(y),nfe,s_max
+    return np.array(tc),np.array(y),nfe,s_max,lop
 
 t0=0
 t_end=1.1
@@ -297,7 +302,7 @@ print('eig:',eig3)
 if s<=6:
     s=6
 #tc1,y1,nfe1,s_max1=RKC2(fun1,t0,t_end,0.0001,y,s)
-tc,y,nfe,s_max=RKC(fun1,t0,t_end,h,y,s)
+tc,y,nfe,s_max,lop=RKC(fun1,t0,t_end,h,y,s)
 #mse = np.mean((np.array(y[1:M,-1]) - np.array(solu[1:M]))**2)
 #mae = np.mean(np.abs(np.array(y[1:M,-1]) - np.array(solu[1:M])
 # ))
@@ -309,6 +314,7 @@ print(tc)
 print("步数：",len(tc))
 print("评估次数：",nfe)
 print("s_max:",s_max)
+print("lop:",lop)
 err2=err(y[:,-3],y[:,-2],0,h)
 #print(y[:,3])
 err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
@@ -318,6 +324,9 @@ with h5py.File('eig3solution.h5', 'r') as hf:
     
 err=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu[1:3*M+2])] )/ len(solu[1:3*M+2])
 print("err:",np.sqrt(err))
+solu1=np.load('eig3solu.npy')
+err2=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu1[1:3*M+2])] )/ len(solu1[1:3*M+2])
+print("err2:",np.sqrt(err2))
 
 #plt.plot(x, y[:,-1],'red')
 #plt.plot(x, solu,'blue')

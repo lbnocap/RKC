@@ -1,4 +1,4 @@
-import numpy as np   #改造真三阶二步非线性例5
+import numpy as np   #改造真三阶二步非线性例三
 import numpy.matlib
 import matplotlib.pyplot as plt
 from numpy.polynomial import chebyshev
@@ -7,7 +7,7 @@ import math
 import h5py
 np.seterr(divide='ignore', invalid='ignore')
 
-M=200
+M=500
 time_st=time.time()
 x0=0
 x_end=1
@@ -288,7 +288,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
     return np.array(tc),np.array(y),nfe,s_max
 t0=0
 t_end=1
-h=0.001
+h=0.01
 eig3,fg1=ro(0,y)
 print('eig:',eig3)
 eig1,abcd=np.linalg.eig(BB)

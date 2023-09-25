@@ -8,7 +8,7 @@ import math
 import h5py
 
 np.seterr(divide='ignore', invalid='ignore')
-M=200
+M=500
 time_st=time.time()
 x0=0
 x_end=1
@@ -73,7 +73,7 @@ def fun1(x,z):
     v1=0.07*(u-0.7*e)*(u-1.3*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
     w1=-(v**2)*w+0.035*(u-0.7*e)*(u-1.3*e)/((u-0.7*e)*(u-1.3*e)+0.1*e)
     b=np.vstack((u1, v1, w1))'''
-    b=b.reshape((603,1))
+    b=b.reshape((3*M+3,1))
     U=np.dot(BB,z).reshape((3*M+3,1))
     return U+b
 def err(x,y,h):
@@ -227,13 +227,10 @@ def RKC(f,t0,t_end,h,u0,s):
             if s<3:
                     s=3
             h=yt*h1
-            
-
-
-           
+                 
         else :
             k02=y[:,-2].copy()
-            k02=k02.reshape((603,1))
+            k02=k02.reshape((3*M+3,1))
             yb=k3.copy()
             yc=bf1*k02+b0*k0+bn*yb
             pu,fg1=ro(tc[-1]+h1,yc)
@@ -284,18 +281,21 @@ print("s_max:",s_max)
 err2=err(y[:,-3],y[:,-2],h)
 #print(y[:,3])
 err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
-print("err:",err1)
+print("err1:",err1)
 with h5py.File('eig3solution.h5', 'r') as hf:
     solu = hf['solu1'][:]
     
-err=sum([(x - y) ** 2 for x, y in zip(y[1:M,-1], solu[1:M])] )/ len(solu[1:M])
-print("err:",np.sqrt(err))
+err=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu[1:3*M+2])] )/ len(solu[1:3*M+2])
+print("err1:",np.sqrt(err))
+solu1=np.load('eig3solu.npy')
+err2=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu1[1:3*M+2])] )/ len(solu1[1:3*M+2])
+print("err2:",np.sqrt(err2))
 
 #plt.plot(x, y[:,-1],'red')
 #plt.plot(x, solu,'blue')
 #plt.title(' t=2 af=0.1 beta=0.05  numberical solutions of RKC')
 #plt.xlabel('x')
-#plt.ylabel('y') 
+#plt.ylabel('y')
 #plt.legend()
 #fig = plt.figure()
 #ax = fig.add_subplot(projection='3d')

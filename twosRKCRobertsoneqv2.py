@@ -5,6 +5,7 @@ from numpy.polynomial import chebyshev
 import time
 import copy
 import math
+import pandas as pd
 
 np.seterr(divide='ignore', invalid='ignore')
 pi=math.pi
@@ -56,7 +57,7 @@ for i in range(0,M+1):
         y[i]=np.sin(pi*x[i])
         y[M+1+i]=0
         y[2*M+2+i]=1-np.sin(pi*x[i])
-        solu[i]=np.exp(-1)*np.sin(pi*x[i])
+        slou[i]=np.exp(-1)*np.sin(pi*x[i])
         solu[M+1+i]=0
         solu[2*M+2+i]=1-np.exp(-1)*np.sin(pi*x[i])
         e[i]=0 
@@ -225,7 +226,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
     return np.array(tc),np.array(y),nfe,s_max
 t0=0
 t_end=1
-h=0.001
+h=0.005
 eig3,fg1=ro(0,y)
 s2=np.sqrt(h*eig3/0.4)                                           
 s=int(s2)
@@ -252,5 +253,6 @@ err2=err(y[:,-3],y[:,-2],tc[-1],h)
 #print(y[:,3])
 err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
 print("err1:",err1)
-err=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu[1:3*M+2])] )/ len(solu[1:3*M+2])
+solu1=np.load('Robertsoneqsolu.npy')
+err=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu1[1:3*M+2])] )/ len(solu1[1:3*M+2])
 print("err:",np.sqrt(err))

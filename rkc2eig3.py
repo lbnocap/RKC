@@ -10,70 +10,48 @@ import pandas as pd
 
 
 np.seterr(divide='ignore', invalid='ignore')
-pi=math.pi
-M=400
+M=500
 time_st=time.time()
 x0=0
 x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
-bt=1/(25* pi**2)
-af=26/(25* pi**2)
-gm=1/pi**2
+bt=0.04
+bf=0.001
+lop=52000
 e=np.zeros((M+1,1))
-BB=np.zeros((3*M+3,3*M+3))
-A=np.zeros((M+1,M+1)) 
-B=np.zeros((M+1,M+1))
-C=np.zeros((M+1,M+1))
-solu=np.zeros((3*M+3,1))
+BB=np.zeros((3*M+3,3*M+3))      
+B=np.zeros((M+1,M+1)) 
 y=np.zeros((3*M+3,1))
-atol=1e-5
-rtol=1e-5
-lop=74000
+tol=1e-3
+
 for i in range(0,M+1):
-    if i==0:
-        y[i]=np.sin(pi*x[i])
-        y[M+1+i]=0
-        y[2*M+2+i]=1-np.sin(pi*x[i])
-        solu[i]=np.exp(-1)*np.sin(pi*x[i])
-        solu[M+1+i]=0
-        solu[2*M+2+i]=1-np.exp(-1)*np.sin(pi*x[i])
+    if i==0:   
+        y[i]=0
+        y[M+1+i]=-2*np.cos(2*np.pi*x[i])
+        y[2*M+2+i]=2*np.sin(2*np.pi*x[i])
         e[0]=0
         B[0][0],B[0][1]=-2*bt/(hx**2),bt/(hx**2)
-        B[0][M-1]=-bt/(hx**2)
-        A[0][0],A[0][1]=-2*af/(hx**2),af/(hx**2)
-        A[0][M-1]=-af/(hx**2)
-        C[0][0],C[0][1]=2*gm/(hx**2),-5*gm/(hx**2)
-        C[0][2],C[0][3]=4*gm/(hx**2),-gm/(hx**2)
+        B[0][M-1]=bt/(hx**2)
     elif 0<i<M:
-        y[i]=np.sin(pi*x[i])
-        y[M+1+i]=0
-        y[2*M+2+i]=1-np.sin(pi*x[i])
-        solu[i]=np.exp(-1)*np.sin(pi*x[i])
-        solu[M+1+i]=0
-        solu[2*M+2+i]=1-np.exp(-1)*np.sin(pi*x[i])
+        y[i]=0
+        y[M+1+i]=-2*np.cos(2*np.pi*x[i])
+        y[2*M+2+i]=2*np.sin(2*np.pi*x[i])
         e[i]=1
         B[i][i-1],B[i][i],B[i][i+1]=bt/(hx**2),-2*bt/(hx**2),bt/(hx**2)
-        A[i][i-1],A[i][i],A[i][i+1]=af/(hx**2),-2*af/(hx**2),af/(hx**2)
-        C[i][i-1],C[i][i],C[i][i+1]=gm/(hx**2),-2*gm/(hx**2),gm/(hx**2)
     else:
-        y[i]=np.sin(pi*x[i])
-        y[M+1+i]=0
-        y[2*M+2+i]=1-np.sin(pi*x[i])
-        solu[i]=np.exp(-1)*np.sin(pi*x[i])
-        solu[M+1+i]=0
-        solu[2*M+2+i]=1-np.exp(-1)*np.sin(pi*x[i])
+        y[i]=0
+        y[M+1+i]=-2*np.cos(2*np.pi*x[i])
+        y[2*M+2+i]=2*np.sin(2*np.pi*x[i])
         e[i]=0 
         B[M][M],B[M][M-1]=-2*bt/(hx**2),bt/(hx**2)
-        B[M][1]=-bt/(hx**2)
-        A[M][M],A[M][M-1]=-2*af/(hx**2),af/(hx**2)
-        A[M][1]=-af/(hx**2)
-        C[M][M],C[M][M-1]=2*gm/(hx**2),-5*gm/(hx**2)
-        C[M][M-2],C[M][M-3]=4*gm/(hx**2),-gm/(hx**2)
+        B[M][1]=bt/(hx**2)
 
-BB[0:M+1,0:M+1],BB[M+1:2*M+2,M+1:2*M+2]=A,B
-BB[2*M+2:3*M+3,2*M+2:3*M+3]=C
-
+BB[0:M+1,0:M+1],BB[M+1:2*M+2,M+1:2*M+2]=B,B
+BB[2*M+2:3*M+3,2*M+2:3*M+3]=B+np.eye(M+1)
+BB[0:M+1,2*M+2:3*M+3]=(-1/bf)*np.eye(M+1)
+BB[M+1:2*M+2,2*M+2:3*M+3]=np.eye(M+1)
+BB[2*M+2:3*M+3,0:M+1],BB[2*M+2:3*M+3,M+1:2*M+2]=-0.4*np.eye(M+1),-1*np.eye(M+1)
 
 def fun1(x,z):
     b=np.zeros((3*M+3,1))
@@ -82,23 +60,23 @@ def fun1(x,z):
     w=z[2*M+2:3*M+3]
     
     for j in range(0,M+1):
-        b[j]=(10**4)*v[j]*w[j]-0.04*u[j]
-        b[M+1+j]=-3*(10**7)*(v[j]**2)-(10**4)*v[j]*w[j]+0.04*u[j]
-        b[2*M+2+j]=3*(10**7)*(v[j]**2)
+        b[j]=(-1/bf)*(u[j]**3+u[j]*v[j])
+        b[M+1+j]=0.07*(u[j]-0.7)*(u[j]-1.3)/((u[j]-0.7)*(u[j]-1.3)+0.1)
+        b[2*M+2+j]=-((v[j])**2)*w[j]+0.035*(u[j]-0.7)*(u[j]-1.3)/((u[j]-0.7)*(u[j]-1.3)+0.1)
     b=b.reshape((3*M+3,1))
     U=np.dot(BB,z).reshape((3*M+3,1))
     return U+b
-
-
-
 def err(x,y,tc,h):
     x1=x.reshape((3*M+3,1))
     y1=y.reshape((3*M+3,1))
     z1=12*(x1-y1)
-    return 0.1*(z1+6*h*(fun1(tc+h,x1)+fun1(tc+h,y1)))
+    return (0.1) *(z1+6*h*(fun1(tc+h,x1)+fun1(tc+h,y1)))
+
+eig1,abcd=np.linalg.eig(BB)
+eig2=np.max(np.abs(eig1)) 
 
 def ro(x,y):
-    e=1e-12;ln=len(y)
+    e=1e-8;ln=len(y)
     Rv=y.copy()
     for j in range(ln):
         if y[j]==0:
@@ -107,7 +85,7 @@ def ro(x,y):
             Rv[j]=y[j]*(1+e/2)
     e=max(e,e*np.linalg.norm(Rv,ord=2))
     Rv1=y.copy()
-    f1=fun1(x,Rv1) 
+    f1=fun1(x,Rv1)
     f2=fun1(x,Rv)
     Rv1=Rv+e*(f1-f2)/(np.linalg.norm(f1-f2))
     Rv1=Rv1.reshape((ln,1))
@@ -115,16 +93,17 @@ def ro(x,y):
     R=np.linalg.norm(f1-f2)/e
     Rr=R
     fg=R;fg1=0
-    while fg > 1e-4*R and fg1<30:
+    while fg > 1e-4*R and fg1<20:
         Rv1=Rv+e*(f1-f2)/np.linalg.norm(f1-f2)
         f1=fun1(x,Rv1)
         R=np.linalg.norm(f1-f2)/e
         fg=np.abs(R-Rr)
         fg1+=1
         Rr=R 
-    if fg1==30:
-        R=1.1*R
+    if fg1==20:
+        R=1.2*R
     return R,fg1
+
 
 RKCv2= np.load('RKC2.npz', allow_pickle=True)
 cs = RKCv2['cs']
@@ -196,8 +175,8 @@ def RKC(fun1,t0,t_end,h,u0,s):
             
     return np.array(tc),np.array(y),nfe,s_max
 t0=0
-t_end=1
-h=0.001
+t_end=1.1
+h=0.00001
 eig3,fg1=ro(0,y)
 s2=np.sqrt(h*eig3/0.55)                                           
 s=math.ceil(s2)
@@ -205,8 +184,8 @@ print(s)
 print('eig:',eig3)
 #print(fun1(x,y))
 #print(y)
-#if s<=5:
- #   s=5
+if s<=2:
+  s=2
 #tc1,y1,nfe1,s_max1=RKC2(fun1,t0,t_end,0.0001,y,s)
 tc,y,nfe,s_max=RKC(fun1,t0,t_end,h,y,s)
 #mse = np.mean((np.array(y[1:M,-1]) - np.array(solu[1:M]))**2)
@@ -224,18 +203,13 @@ err2=err(y[:,-3],y[:,-2],0,h)
 #print(y[:,3])
 err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
 print("err1:",err1)
-solu1=np.load('Robertsoneqsolu.npy')
-err=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu1[1:3*M+2])] )/ len(solu1[1:3*M+2])
-print("err:",np.sqrt(err))
 
-'''
-df = pd.read_excel("solu.xlsx")
+eig3solu=y[:,-1].reshape((3*M+3,1))
 
-# 创建第二组数据
+#df = pd.DataFrame(eig3solu, columns=["RKc2eigsolu0.00001"])  # 设置列名
 
-# 将第二组数据放在第二列
-df["RObsolual3rd_0.0001  "] = Robsolu
+# 导出DataFrame到Excel
 
 # 保存到Excel文件
-df.to_excel("solu.xlsx", index=False)
-np.save('Robertsoneqsolu.npy',Robsolu)'''
+#df.to_excel("eig3solu.xlsx", index=False)
+#np.save('eig3solu.npy',eig3solu)

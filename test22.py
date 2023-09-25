@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
-
+import pandas as pd
 # 定义复数函数
 def complex_function(z):
     return z**2 + 2*z + 1
@@ -38,20 +38,20 @@ stacked_matrix = np.vstack((vector1, vector2, vector3))
 
 r=0.8*((1/0.4628)**(1/3))
 solu=np.zeros((1002,1))
-solu1=np.zeros((3003,1))
+solu1=np.zeros((1203,1))
 
 x=np.linspace(0,1,500+1,dtype=float)
-x1=np.linspace(0,1,1000+1,dtype=float)
+x1=np.linspace(0,1,400+1,dtype=float)
 for i in range(0,500+1):
      solu[500+1+i]=np.exp(-((pi)**2) *bt*0.01)*np.cos(pi*(x[i]-0.01))
      solu[i]=np.exp(-((pi)**2) *bt*0.01)*np.sin(pi*(x[i]-0.01))
 
-for i in range(0,1001):
+for i in range(0,401):
         solu1[i]=np.exp(-1)*np.sin(pi*x1[i])
-        solu1[1001+i]=0
-        solu1[2002+i]=1-np.exp(-1)*np.sin(pi*x1[i])
-
+        solu1[401+i]=0
+        solu1[802+i]=1-np.exp(-1)*np.sin(pi*x1[i])
 print(solu1)
+
 
 #[2.76551848] [1.40166833] [0.28742099] [0.81988987] 2.0247827947216464 -0.9615580646630746 0.10579341717210078 0.7415737131783371
 #[2.76551848] [1.40166833] [0.28742099] [0.81988987] 1.7655184769831167 -0.863850142301906 0.10184522681723429 0.6343141062448767
@@ -102,3 +102,5 @@ cs=RKC2['cs']
 
 a=(26/(25* pi**2))*(-np.sin(pi*(1-0.0001))-2*np.sin(pi*0)+np.sin(pi*0.0001))/(0.001**2)
 
+print(np.log2(0.00011279/2.11796859e-05))
+print(np.log2(0.00039466/0.00242638))

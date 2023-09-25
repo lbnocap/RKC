@@ -5,9 +5,10 @@ from numpy.polynomial import chebyshev
 import time
 import copy
 import math
+import pandas as pd
 
 np.seterr(divide='ignore', invalid='ignore')
-pi=math.pi
+pi=math.pi 
 M=400
 time_st=time.time()
 x0=0
@@ -141,6 +142,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
     nfe=0
     s_max=0
     h1=h
+    lop=0
     yb0=np.zeros((2*M+2,1))
     while tc[-1]<t_end:
         c=cs[s,0]
@@ -208,8 +210,10 @@ def RKC(fun1,t0,t_end,h,u0,s):
             yb0=yb.copy()
             if tc[-1]==0.001:
                1# print(yc,yb)
-            pu,fg1=ro(tc[-1]+h1,yc)
             tc.append(tc[-1]+h1)
+            pu,fg1=ro(tc[-1]+h1,yc)
+            if pu>lop:
+                lop=pu
             if tc[-1] + h1 > t_end:
                  h1 = t_end -tc[-1]
                  h=h1  
@@ -226,15 +230,15 @@ def RKC(fun1,t0,t_end,h,u0,s):
             #err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
             #print(err1)
             y = np.column_stack((y, yc))
-    return np.array(tc),np.array(y),nfe,s_max
+    return np.array(tc),np.array(y),nfe,s_max,lop
 
 
 t0=0
 t_end=1
-h=0.001
+h=0.0005
 eig3,fg1=ro(0,y)
 s2=np.sqrt(h*eig3/0.4)                                           
-s=int(s2)
+s=math.ceil(s2)
 print(s)
 print('eig:',eig3)
 #print(fun1(x,y))
@@ -242,7 +246,7 @@ print('eig:',eig3)
 if s<=5:
     s=5
 #tc1,y1,nfe1,s_max1=RKC2(fun1,t0,t_end,0.0001,y,s)
-tc,y,nfe,s_max=RKC(fun1,t0,t_end,h,y,s)
+tc,y,nfe,s_max,lop=RKC(fun1,t0,t_end,h,y,s)
 #mse = np.mean((np.array(y[1:M,-1]) - np.array(solu[1:M]))**2)
 #mae = np.mean(np.abs(np.array(y[1:M,-1]) - np.array(solu[1:M])
 # ))
@@ -254,9 +258,11 @@ print(tc)
 print("步数：",len(tc))
 print("评估次数：",nfe)
 print("s_max:",s_max)
+print("lop:",lop)
 err2=err(y[:,-3],y[:,-2],0,h)
 #print(y[:,3])
 err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
 print("err1:",err1)
-err=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu[1:3*M+2])] )/ len(solu[1:3*M+2])
+solu1=np.load('Robertsoneqsolu.npy')
+err=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu1[1:3*M+2])] )/ len(solu1[1:3*M+2])
 print("err:",np.sqrt(err))

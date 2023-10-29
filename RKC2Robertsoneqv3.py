@@ -197,7 +197,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
     return np.array(tc),np.array(y),nfe,s_max
 t0=0
 t_end=1
-h=0.001
+h=0.005
 eig3,fg1=ro(0,y)
 s2=np.sqrt(h*eig3/0.55)                                           
 s=math.ceil(s2)

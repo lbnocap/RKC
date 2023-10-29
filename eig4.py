@@ -4,8 +4,10 @@ import matplotlib.pyplot as plt
 from numpy.polynomial import chebyshev
 import time
 import math
+from scipy.linalg import eigvals
+
 np.seterr(divide='ignore', invalid='ignore')
-import cupy as cp
+   
 
 
 
@@ -19,7 +21,7 @@ hx=x[1]-x[0]
 bt=0.03
 af=0.1
 A=np.zeros(((M-1)**2,(M-1)**2))
-B=np.zeros((M-1,M-1)) 
+B=np.zeros((M-1,M-1))                  
 E=np.eye(M-1)*af/(hx**2)
 for i in range(0,M-1):
     if i==0:
@@ -39,6 +41,10 @@ for j in range(0,M-1):
       A[(j)*(M-1):(j+1)*(M-1),(j-1)*(M-1):(j)*(M-1)]=E
       A[j*(M-1):(j+1)*(M-1),(j)*(M-1):(j+1)*(M-1)]=B
 
-eig1,abcd=np.linalg.eig(A)
-eig2=np.max(np.abs(eig1)) 
-print(eig2)
+
+#eig1,abcd=np.linalg.eig(A)
+#eig2=np.max(np.abs(eig1)) 
+eig2=max(abs(eigvals(A)))
+time_ed=time.time()
+print(time_st-time_ed)
+

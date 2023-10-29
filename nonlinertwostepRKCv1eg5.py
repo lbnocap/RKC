@@ -15,7 +15,7 @@ x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.03
 af=0
-gm=-500
+gm=-2000
 e=np.zeros((M+1,1))
 A=np.zeros((2*M+2,M*2+2))
 B=np.zeros((M+1,M+1)) 
@@ -54,9 +54,9 @@ A[0:M+1,0:M+1]=B
 A[M+1:2*M+2,M+1:M*2+2]=B
 print(solu)
 def g1(t,x):
-    return np.exp(-((pi)**2) *bt*t)*(-gm*np.sin(pi*(x-t))-pi*np.cos(pi*(x-t)))+np.exp(-3*((pi)**2) *bt*t)*((np.sin(pi*(x-t)))**2)*np.cos(pi*(x-t))
+    return np.exp(-((pi)**2) *bt*t)*(-gm*np.sin(pi*(x-t))+(af-1)*pi*np.cos(pi*(x-t)))+np.exp(-3*((pi)**2) *bt*t)*((np.sin(pi*(x-t)))**2)*np.cos(pi*(x-t))
 def g2(t,x):
-    return np.exp(-((pi)**2) *bt*t)*(-gm*np.cos(pi*(x-t))+pi*np.sin(pi*(x-t)))+np.exp(-3*((pi)**2 )*bt*t)*((np.cos(pi*(x-t)))**2)*np.sin(pi*(x-t))
+    return np.exp(-((pi)**2) *bt*t)*(-gm*np.cos(pi*(x-t))-(af-1)*pi*np.sin(pi*(x-t)))+np.exp(-3*((pi)**2 )*bt*t)*((np.cos(pi*(x-t)))**2)*np.sin(pi*(x-t))
 def fun1(t,z):
     U=np.dot(A,z).reshape((2*M+2,1))
     b=np.zeros((2*M+2,1))
@@ -123,7 +123,23 @@ def RKC(fun1,t0,t_end,h,u0,s):
         t42=chebyshev.Chebyshev([0] * (2 + 1))
         t42.coef[-1]=1
         t22=t42.deriv(2) 
-        w0=1+(0.05)/((s)**2)
+        if s==3:
+         w0=1+(100)/((s)**2)
+        if s==4:
+         w0=1+(4)/((s)**2)
+        if s==5:
+         w0=1+(2)/((s)**2)
+        if s==6:
+         w0=1+(1.5)/((s)**2)
+        if s==7:
+         w0=1+(1.5)/((s)**2)
+        if s==8:
+         w0=1+(1.0)/((s)**2)
+        if s>9:
+         w0=1+(0.9)/((s)**2)
+        
+           
+        w0=1+(0.9)/((s)**2)
         c=np.zeros(s+1)
         b=np.zeros(s+1)
         t=np.zeros(s+1)

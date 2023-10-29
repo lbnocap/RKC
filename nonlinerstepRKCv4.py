@@ -205,15 +205,16 @@ def RKC(f,t0,t_end,h,u0,s):
             r=1
         elif counter>=1:
             r=h1/tc[-1]
-        #cc=t3(w0)*t5(w0)/(t4(w0)**2)
+        cc=t3(w0)*t5(w0)/(t4(w0)**2)
         bb=cheb_poly(w0)
         bs=bb/(t3(w0)*w1)
-        #yt=1/np.sqrt(cc)
-        yt=0.7
+        yt=1/np.sqrt(cc)
+        #yt=0.7
         bn=(1+r)/(bs*(yt*c[s]+2*x[s]*r*(yt**2)))
         bf1=(c[s]*r*(1+r))/(c[s]+2*x[s]*r*yt)-r
         b0=1-bf1-bn
         C=1/6+bf1/6-bn*(bs*t5(w0)*(w1**3)*(yt**3)/(6*bb))
+    
         
         if counter==0:
             yc=(1-bs)*k0+bs*k3

@@ -37,9 +37,9 @@ for i in range(0,M+1):
         solu[2*M+2+i]=1-np.exp(-1)*np.sin(pi*x[i])
         e[0]=0
         B[0][0],B[0][1]=-2*bt/(hx**2),bt/(hx**2)
-        B[0][M-1]=-bt/(hx**2)
+        B[0][M]=-bt/(hx**2)
         A[0][0],A[0][1]=-2*af/(hx**2),af/(hx**2)
-        A[0][M-1]=-af/(hx**2)
+        A[0][M]=-af/(hx**2)
         C[0][0],C[0][1]=2*gm/(hx**2),-5*gm/(hx**2)
         C[0][2],C[0][3]=4*gm/(hx**2),-gm/(hx**2)
     elif 0<i<M:
@@ -62,9 +62,9 @@ for i in range(0,M+1):
         solu[2*M+2+i]=1-np.exp(-1)*np.sin(pi*x[i])
         e[i]=0 
         B[M][M],B[M][M-1]=-2*bt/(hx**2),bt/(hx**2)
-        B[M][1]=-bt/(hx**2)
+        B[M][0]=-bt/(hx**2)
         A[M][M],A[M][M-1]=-2*af/(hx**2),af/(hx**2)
-        A[M][1]=-af/(hx**2)
+        A[M][0]=-af/(hx**2)
         C[M][M],C[M][M-1]=2*gm/(hx**2),-5*gm/(hx**2)
         C[M][M-2],C[M][M-3]=4*gm/(hx**2),-gm/(hx**2)
 
@@ -123,7 +123,7 @@ def ro(x,y):
         R=1.1*R
     return R,fg1
 
-widetwoRKCv2= np.load('widetwostepRKCv2.npz', allow_pickle=True)
+widetwoRKCv2 = np.load(r'C:\Users\A204-7\Desktop\RKC\RKC\widetwostepRKCv2.npz', allow_pickle=True)
 cs = widetwoRKCv2['cs']
 us1=widetwoRKCv2['us1']
 vs1=widetwoRKCv2['vs1']
@@ -132,6 +132,55 @@ us=widetwoRKCv2['us']
 bs=widetwoRKCv2['bs']
 xxs=widetwoRKCv2['xxs']
 
+RKCv2= np.load(r'C:\Users\A204-7\Desktop\RKC\RKC\RKC2.npz', allow_pickle=True)
+RKC2cs = RKCv2['cs']
+RKC2us1=RKCv2['us1']
+RKC2vs1=RKCv2['vs1']
+RKC2vs=RKCv2['vs']
+RKC2us=RKCv2['us']
+
+def RKC2(fun1,t0,h,u0,s): 
+    h1=h
+    tc=[t0] #t的初始
+    y1=u0 
+    counter1=0
+    while counter1==0:
+        c=RKC2cs[s,0]
+        u1=RKC2us1[s,0]
+        u=RKC2us[s,0]
+        v1=RKC2vs1[s,0]
+        v=RKC2vs[s,0]
+        print("u1:",y1)
+        k0=np.zeros((3*M+3,1))
+        k1=np.zeros((3*M+3,1))
+        k2=np.zeros((3*M+3,1))
+        k3=np.zeros((3*M+3,1))
+        ky0=np.zeros((3*M+3,1))
+        ky1=np.zeros((3*M+3,1))
+        k0=y1[:,-1].copy()
+        k0=k0.reshape((3*M+3,1))
+        ky0=fun1(tc[-1],k0)
+        k1=k0+u1[1] *h *ky0
+        ky1=fun1(tc[-1]+u1[1]*h,k1) 
+        k2=k1.copy()
+        k1=k0.copy()
+        for j in range(2,s+1):
+
+            k3=u[j]*k2+v[j]*k1+(1-u[j]-v[j])*k0+u1[j]*h*ky1+v1[j]*h*ky0
+            #if j==4:
+                #print(k[4])
+            ky1=fun1(tc[-1]+c[j]*h,k3)
+            k1=k2.copy()
+            k2=k3.copy()
+      
+        
+        yc=k3.copy()
+            #err2=err(y[:,-1],yc,tc[-1],h1)
+            #err1=np.linalg.norm(err2)/math.sqrt(2*M+2)
+            #print(err1)
+            # fac=0.8*((1/err1)**(1/3))
+        counter1=1
+    return yc
 
 def RKC(fun1,t0,t_end,h,u0,s): 
     
@@ -143,7 +192,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
     s_max=0
     h1=h
     lop=0
-    yb0=np.zeros((2*M+2,1))
+    yb0=np.zeros((3*M+3,1))
     while tc[-1]<t_end:
         c=cs[s,0]
         u1=us1[s,0]
@@ -161,7 +210,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
         k0=y[:,-1].copy()
         k0=k0.reshape((3*M+3,1))
         ky0=fun1(tc[-1],k0)
-        k1=k0+u1[1] *h *ky0
+        k1=k0+u1[1] *h *ky0 
         ky1=fun1(tc[-1]+u1[1]*h,k1)
         k2=k1.copy()
         k1=k0.copy()
@@ -180,15 +229,15 @@ def RKC(fun1,t0,t_end,h,u0,s):
         xx4=xx[3]
             
         if counter==0:
-            yc=k3.copy()
+            yc=RKC2(fun1,t0,h,u0,s)
            
            # print("yc:",yc)
           
 
             #err2=err(y[:,-1],yc,h1)
             #err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
-            yb0=k3.copy()
            # print(yb0)y, yc))
+            yb0=k3.copy()
             y = np.column_stack((y, yc))
             counter+=1
             tc.append(tc[-1]+h1)
@@ -235,7 +284,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
 
 t0=0
 t_end=1
-h=0.0005
+h=0.01
 eig3,fg1=ro(0,y)
 s2=np.sqrt(h*eig3/0.4)                                           
 s=math.ceil(s2)
@@ -263,6 +312,10 @@ err2=err(y[:,-3],y[:,-2],0,h)
 #print(y[:,3])
 err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
 print("err1:",err1)
-solu1=np.load('Robertsoneqsolu.npy')
-err=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu1[1:3*M+2])] )/ len(solu1[1:3*M+2])
+solu1=np.load(r'C:\Users\A204-7\Desktop\RKC\RKC\Robertsoneqsolu.npy')
+err=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu1[1:3*M+2])] )/ len(solu1 [1:3*M+2])
 print("err:",np.sqrt(err))
+plt.plot(x[1:M], y[1:M,-1],'red')
+plt.plot(x[1:M], solu1[1:M],'blue')
+plt.plot(x[1:M], solu[1:M],'black')
+plt.show()

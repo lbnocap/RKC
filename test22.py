@@ -5,7 +5,6 @@ import pandas as pd
 # 定义复数函数
 def complex_function(z):
     return z**2 + 2*z + 1
-
 # 生成复平面上的网格点（增加网格点数量）
 x = np.linspace(-2, 2, 200)
 y = np.linspace(-2, 2, 200)
@@ -102,5 +101,5 @@ cs=RKC2['cs']
 
 a=(26/(25* pi**2))*(-np.sin(pi*(1-0.0001))-2*np.sin(pi*0)+np.sin(pi*0.0001))/(0.001**2)
 
-print(np.log2(0.00011279/2.11796859e-05))
+print(np.log2(3.8115117e-05/9.71008659e-06))
 print(np.log2(0.00039466/0.00242638))

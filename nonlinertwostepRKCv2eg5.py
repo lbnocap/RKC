@@ -14,8 +14,8 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.03
-af=0
-gm=-1500
+af=1
+gm=-1000
 e=np.zeros((M+1,1))
 A=np.zeros((2*M+2,M*2+2))
 B=np.zeros((M+1,M+1)) 
@@ -54,9 +54,9 @@ A[0:M+1,0:M+1]=B
 A[M+1:2*M+2,M+1:M*2+2]=B
 print(solu)
 def g1(t,x):
-    return np.exp(-((pi)**2) *bt*t)*(-gm*np.sin(pi*(x-t))-pi*np.cos(pi*(x-t)))+np.exp(-3*((pi)**2) *bt*t)*((np.sin(pi*(x-t)))**2)*np.cos(pi*(x-t))
+    return np.exp(-((pi)**2) *bt*t)*(-gm*np.sin(pi*(x-t))+(af-1)*pi*np.cos(pi*(x-t)))+np.exp(-3*((pi)**2) *bt*t)*((np.sin(pi*(x-t)))**2)*np.cos(pi*(x-t))
 def g2(t,x):
-    return np.exp(-((pi)**2) *bt*t)*(-gm*np.cos(pi*(x-t))+pi*np.sin(pi*(x-t)))+np.exp(-3*((pi)**2 )*bt*t)*((np.cos(pi*(x-t)))**2)*np.sin(pi*(x-t))
+    return np.exp(-((pi)**2) *bt*t)*(-gm*np.cos(pi*(x-t))-(af-1)*pi*np.sin(pi*(x-t)))+np.exp(-3*((pi)**2 )*bt*t)*((np.cos(pi*(x-t)))**2)*np.sin(pi*(x-t))
 def fun1(t,z):
     U=np.dot(A,z).reshape((2*M+2,1))
     b=np.zeros((2*M+2,1))
@@ -160,8 +160,8 @@ def RKC(fun1,t0,t_end,h,u0,s):
         if counter<1:   
             w1=t3(w0)/t4(w0)
         else:
-            w1=t3(w0)/t4(w0)
-            #w1=(1+w0)/(0.45*s**2)
+            #w1=t3(w0)/t4(w0)
+            w1=(1+w0)/(0.45*s**2)
             #w1=t3(w0)/t4(w0)
         u[0],u1[1]=0,b[1]*w1
         k0=y[:,-1].copy()
@@ -239,8 +239,8 @@ def RKC(fun1,t0,t_end,h,u0,s):
             s=math.ceil(s2)
             if s_max<s:
                    s_max=s
-            if s<3:
-                    s=3
+            if s<5:
+                    s=5
             if s>200:
                 s=200
             #h=yt*h1
@@ -262,8 +262,8 @@ def RKC(fun1,t0,t_end,h,u0,s):
                  h=h1
             s2=np.sqrt(h1*pu/0.45)                                           
             s=math.ceil(s2)
-            if s<3:
-                s=3
+            if s<5:
+                s=5
             if s>s_max:
                 s_max=s
             if s>200:
@@ -274,7 +274,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
     return np.array(tc),np.array(y),nfe,s_max
 t0=0
 t_end=1
-h=0.0001
+h=0.01
 eig3,fg1=ro(0,y)
 print('eig:',eig3)
 eig1,abcd=np.linalg.eig(A)
@@ -284,8 +284,8 @@ s2=np.sqrt(h*eig3/0.45)
 s=int(s2)
 f=fun1(0,y)
 #print(y)
-if s<=3:
-    s=3
+if s<5:
+    s=5
 tc,y,nfe,s_max=RKC(fun1,t0,t_end,h,y,s)
 err=sum([(x - y) ** 2 for x, y in zip(y[1:M,-1], solu[1:M])] )/ len(solu[1:M])
 print("err:",np.sqrt(err))

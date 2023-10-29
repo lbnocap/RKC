@@ -34,7 +34,7 @@ x=np.zeros(s+1)
 k=np.zeros(s+1)
 e=np.ones((s+1,1))
 
-w0=1+(0.05/((s)**2))
+w0=1+(0.9/((s)**2))
 x[0],x[1]=0,0 
 k[0],k[1]=0,0
 c[0]=0
@@ -48,13 +48,13 @@ v=np.zeros(s+1)
 v[0],v[1]=0,0  
 u1=np.zeros(s+1)
 #计算s阶切比雪夫多项式在特定点的值\w0=
-#w11=t3(w0)/t4(w0)
+w11=t3(w0)/t4(w0)
 #w11=cheb_poly(w0)/t3(w0)
-w11=1/(ww*(s**2))
-print(w11)
+#w11=1/(ww*(s**2))
 u1[0],u1[1]=0,w11/w0 
 c[1]=w11/w0
 A[1,0]=u1[1]
+
 for j in range(2,s+1):
          t[j]=2*w0*t[j-1]-t[j-2]
          b[j]=1/t[j] 
@@ -71,7 +71,7 @@ for j in range(2,s+1):
         
 k[s1]=t5s1(w0)*(w11**3)/(cheb_polys1(w0)*6)
 k[s2]=t5s2(w0)*(w11**3)/(cheb_polys2(w0)*6) 
-k[s]=t5(w0)*(w11**3)/(cheb_poly(w0)*6)  
+k[s]=t5(w0)*(w11**3)/(cheb_poly(w0)*6) 
 coefficients = np.array([[c[s1], c[s2], c[s]],
                          [x[s1], x[s2],x[s]],
                         [k[s1], k[s2], k[s]]])
@@ -81,11 +81,11 @@ def complex_function(z):
 w1=cheb_poly(w0)/t3(w0)
 bb=cheb_poly(w0)
 bs=bb/(t3(w0)*w11) 
-r=1.3
+r=1
 cc=bs*(t5(w0)/bb)*(w11**3)
 #yt=((r**3+bf1)/(cc*bn*(r**3)))**(1/3)
-yt=(r-1+np.sqrt((1-r)**2+4*r))/(2*r)
-#yt=1/np.sqrt(cc)
+#yt=(r-1+np.sqrt((1-r)**2+4*r))/(2*r)
+yt=1/np.sqrt(cc)
 xs=symbols("xs")
 expr=(1+r)*cc*(r**3)*(xs**3)/(xs+2*x[s]*r*(xs**2))-r*(1+r)/(1+2*x[s]*bs*r*xs)-r**3
 #bn=(1+r)/(bs*(yt*c[s]+2*x[s]*r*(yt**2)))
@@ -94,7 +94,7 @@ bn=(1+r)/(yt*(1+yt*r))
 bf1=(r**2)*(1-yt)/(1+yt*r)
 b0=1-bf1-bn
 
-b1,b2,b3,b4=RKcoefficient2.RKcoefficient2(ww,s)
+b1,b2,b3,b4=RKcoefficient2.RKcoefficient2(ww,s,0.05)
 a=A[s,:].copy()
 a1=np.dot(a,e)
 a2=np.dot(a,np.dot(A,e))
@@ -163,16 +163,16 @@ plt.figure(figsize=(8,6))
 #leftmost_contour = contour.collections[0]
 #leftmost_point = leftmost_contour.get_paths()[0].vertices[0]
 #leftmost_value = complex_function(leftmost_point[0])
-mask1 = np.abs(result4) <= 1
-mask = np.abs(result41) <=1
+mask1 = np.abs(result) <= 1
+mask = np.abs(result1) <=1
 overlap_mask = mask1 & mask
+plt.imshow(overlap_mask,extent=[-1.3*(1+w0)/w1,0,-2*s,2*s] ,origin='lower', cmap='Blues', alpha=1,aspect='auto')
 C=1/6+bf1/6-bn*(bs*t5(w0)*(w1**3)*(yt**3)/(6*bb))
 #plt.imshow(overlap_mask,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=1)
 #plt.imshow(mask,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
 #plt.imshow(mask1,extent=[-100,0,-40,40] ,origin='lower', cmap='Blues', alpha=0.5)
 plt.xlabel('Re(z)')
 plt.ylabel('Im(z)')
-plt.title('Contour Plot of Complex Function (|root| = 1) s=30')
 plt.show()
 
 

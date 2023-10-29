@@ -17,8 +17,8 @@ hx=x[1]-x[0]
 A=np.zeros((M+1,M+1))
 y=np.zeros((M+1,1))
 solu=np.zeros((M+1,1))
-bt=0.1
-af=0
+bt=0.05
+af=0.5
 A=np.zeros((M+1,M+1))
 tol=1e-4
 A[0][0],A[0][1],A[0][2],A[0][3]=2*bt/(hx**2)+af/hx,-5*bt/(hx**2)-af/hx,4*bt/(hx**2),-bt/(hx**2)
@@ -29,11 +29,6 @@ for i in range(M+1):
     if i>=2 and i<=M-1:
         A[i][i-2],A[i][i-1]=-af/(2*hx),bt/(hx**2)+4*af/(2*hx)
         A[i][i],A[i][i+1]=-2*bt/(hx**2)-3*af/(2*hx),bt/(hx**2)
-    '''
-    if i==M:
-        A[M][M-3],A[M][M-2]=-bt/(hx**2),4*bt/(hx**2)-af/hx
-        A[M][M-1],A[M][M]=-5*bt/(hx**2)+4*af/hx,2*bt/(hx**2)-3*af/hx
-    '''
     if i==M:
         A[M][1],A[M][M-2]=bt/(hx**2),-af/(2*hx)
         A[M][M-1],A[M][M]=bt/(hx**2)+4*af/(2*hx),-2*bt/(hx**2)-3*af/hx
@@ -129,7 +124,7 @@ def RKC(f,t0,t_end,h,u0,s):
     return np.array(tc),np.array(y)
 t0=0
 t_end=2
-h=0.01
+h=0.005
 eig1,abcd=np.linalg.eig(A)
 eig2=np.max(np.abs(eig1))
 print(eig2)
@@ -137,13 +132,13 @@ s2=math.sqrt(h*eig2/0.45)
 s=math.ceil(s2)
 print(s)
 if s<3:
-    s=2
+    s=3
 tc,y=RKC(fun1,t0,t_end,h,y,s)
 #mse = np.mean((np.array(y[1:M,-1]) - np.array(solu[1:M]))**2)
 #mae = np.mean(np.abs(np.array(y[1:M,-1]) - np.array(solu[1:M])
 # ))
 err=sum([(x - y) ** 2 for x, y in zip(y[1:M,-1], solu[1:M])] )/ len(solu[1:M])
-print(np.sqrt(err))
+print("err:",np.sqrt(err))
 time_end=time.time()
 print(time_end-time_st)
 plt.plot(x, y[:,-1],'red')

@@ -57,7 +57,7 @@ for i in range(0,M+1):
         y[i]=np.sin(pi*x[i])
         y[M+1+i]=0
         y[2*M+2+i]=1-np.sin(pi*x[i])
-        slou[i]=np.exp(-1)*np.sin(pi*x[i])
+        solu[i]=np.exp(-1)*np.sin(pi*x[i])
         solu[M+1+i]=0
         solu[2*M+2+i]=1-np.exp(-1)*np.sin(pi*x[i])
         e[i]=0 
@@ -123,7 +123,7 @@ def ro(x,y):
         R=1.1*R
     return R,fg1
 
-RKCv2= np.load('twostepRKCv1.npz', allow_pickle=True)
+RKCv2= np.load(r'C:\Users\A204-7\Desktop\RKC\RKC\twostepRKCv1.npz', allow_pickle=True)
 cs = RKCv2['cs']
 us1=RKCv2['us1']
 vs1=RKCv2['vs1']
@@ -226,7 +226,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
     return np.array(tc),np.array(y),nfe,s_max
 t0=0
 t_end=1
-h=0.005
+h=0.1
 eig3,fg1=ro(0,y)
 s2=np.sqrt(h*eig3/0.4)                                           
 s=int(s2)
@@ -234,8 +234,8 @@ print(s)
 print('eig:',eig3)
 #print(fun1(x,y))
 #print(y)
-if s<=5:
-    s=5
+if s<=3:
+    s=3
 #tc1,y1,nfe1,s_max1=RKC2(fun1,t0,t_end,0.0001,y,s)
 tc,y,nfe,s_max=RKC(fun1,t0,t_end,h,y,s)
 #mse = np.mean((np.array(y[1:M,-1]) - np.array(solu[1:M]))**2)
@@ -253,6 +253,6 @@ err2=err(y[:,-3],y[:,-2],tc[-1],h)
 #print(y[:,3])
 err1=np.linalg.norm(err2)/math.sqrt(3*M+3)
 print("err1:",err1)
-solu1=np.load('Robertsoneqsolu.npy')
-err=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu1[1:3*M+2])] )/ len(solu1[1:3*M+2])
+solu1=np.load(r'C:\Users\A204-7\Desktop\RKC\RKC\Robertsoneqsolu.npy')
+err=sum([(x - y) ** 2 for x, y in zip(y[1:3*M+2,-1], solu[1:3*M+2])] )/ len(solu[1:3*M+2])
 print("err:",np.sqrt(err))

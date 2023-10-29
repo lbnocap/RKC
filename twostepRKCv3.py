@@ -34,7 +34,7 @@ for i in range(M+1):
         A[M][M-3],A[M][M-2]=-bt/(hx**2),4*bt/(hx**2)-af/hx
         A[M][M-1],A[M][M]=-5*bt/(hx**2)+4*af/hx,2*bt/(hx**2)-3*af/hx
     '''
-    if i==M:
+    if i==M: 
         A[M][1],A[M][M-2]=bt/(hx**2),-af/(2*hx)
         A[M][M-1],A[M][M]=bt/(hx**2)+4*af/(2*hx),-2*bt/(hx**2)-3*af/hx
 def err(x,y,h):
@@ -111,7 +111,7 @@ def RKC(f,t0,t_end,h,u0,s):
             k[:,1]=k[:,2]
             k[:,2]=k[:,3]
         #r=1
-        cc=t3(w0)*t5(w0)/(t4(w0)**2)
+        cc=(t3(w0)*t5(w0))/(t4(w0)**2)
         yt=1/np.sqrt(cc)
         #yt=0.6
         #bn=(1+r)/(yt*(1+r*yt))
@@ -125,6 +125,7 @@ def RKC(f,t0,t_end,h,u0,s):
         bf1=(r**2)*(1-yt)/(1+yt*r)
         b0=1-bn-bf1
         C=1/6+bf1/6-bn*(yt**3)*cc/6
+        print(C)
         if counter==0:
             yc=k[:,3]
             err2=C*err(y[:,-1],yc,h1)/1e-2

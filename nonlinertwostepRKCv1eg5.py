@@ -15,7 +15,7 @@ x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.03
 af=0
-gm=-2000
+gm=-1000
 e=np.zeros((M+1,1))
 A=np.zeros((2*M+2,M*2+2))
 B=np.zeros((M+1,M+1)) 
@@ -138,8 +138,10 @@ def RKC(fun1,t0,t_end,h,u0,s):
         if s>9:
          w0=1+(0.9)/((s)**2)
         
-           
-        w0=1+(0.9)/((s)**2)
+        cc=t3(w0)*t5(w0)/(t4(w0)**2)
+        yt=1/np.sqrt(cc)
+        if counter==1:
+            h=yt*h1
         c=np.zeros(s+1)
         b=np.zeros(s+1)
         t=np.zeros(s+1)
@@ -199,10 +201,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
        
      
         r=1
-      
         
-        cc=t3(w0)*t5(w0)/(t4(w0)**2)
-        yt=1/np.sqrt(cc)
         #yt=0.8
         bn=(1+r)/(yt*(1+r*yt))
         bf1=(r**2)*(1-yt)/(1+yt*r)
@@ -217,7 +216,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
             print(err1)
            # fac=0.8*((1/err1)**(1/3))
             y = np.column_stack((y, yc))
-            counter+=1
+            counter=1
             if tc[-1]==0:
                 print(yc)
             tc.append(tc[-1]+h1)
@@ -230,7 +229,8 @@ def RKC(fun1,t0,t_end,h,u0,s):
                     s=3
             if s>200:
                 s=200
-            h=yt*h1
+           
+            
          
             
 
@@ -245,7 +245,6 @@ def RKC(fun1,t0,t_end,h,u0,s):
             tc.append(tc[-1]+h1)
             if tc[-1] + h1 > t_end:
                  h1 = t_end -tc[-1]
-            h=yt*h1
             s2=np.sqrt(h1*pu/0.4)                                           
             s=math.ceil(s2)
             if s<3:
@@ -260,7 +259,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
     return np.array(tc),np.array(y),nfe,s_max
 t0=0
 t_end=1
-h=0.01
+h=0.005
 eig3,fg1=ro(0,y)
 print('eig:',eig3)
 eig1,abcd=np.linalg.eig(A)
@@ -273,7 +272,8 @@ f=fun1(0,y)
 if s<=3:
     s=3
 tc,y,nfe,s_max=RKC(fun1,t0,t_end,h,y,s)
-err=sum([(x - y) ** 2 for x, y in zip(y[1:M,-1], solu[1:M])] )/ len(solu[1:M])
+#err=sum([(x - y) ** 2 for x, y in zip(y[1:M,-1], solu[1:M])] )/ len(solu[1:M])
+err=sum([(x - y) ** 2 for x, y in zip(y[1:2*M+2,-1], solu[1:2*M+2])] )/ len(solu[1:2*M+2])
 print("err:",np.sqrt(err))
 print("nfe:",nfe)
 plt.plot(x, y[0:M+1,-1],'red')

@@ -14,8 +14,8 @@ x_end=1
 x=np.linspace(x0,x_end,M+1,dtype=float)
 hx=x[1]-x[0]
 bt=0.03
-af=1
-gm=-1000
+af=0
+gm=-2000
 e=np.zeros((M+1,1))
 A=np.zeros((2*M+2,M*2+2))
 B=np.zeros((M+1,M+1)) 
@@ -125,7 +125,7 @@ def RKC(fun1,t0,t_end,h,u0,s):
         t42.coef[-1]=1
         t22=t42.deriv(2)
         if counter<1: 
-           w0=1+(0.9)/((s)**2)
+           w0=1+(2/13)/((s)**2)
         else:
            w0=1+(0.9)/((s)**2)
         c=np.zeros(s+1)
@@ -160,8 +160,8 @@ def RKC(fun1,t0,t_end,h,u0,s):
         if counter<1:   
             w1=t3(w0)/t4(w0)
         else:
-            #w1=t3(w0)/t4(w0)
-            w1=(1+w0)/(0.45*s**2)
+            w1=t3(w0)/t4(w0)
+            #w1=(1+w0)/(0.45*s**2)
             #w1=t3(w0)/t4(w0)
         u[0],u1[1]=0,b[1]*w1
         k0=y[:,-1].copy()
